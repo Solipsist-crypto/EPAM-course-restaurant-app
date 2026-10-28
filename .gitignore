@@ -1,0 +1,76 @@
+# Secrets, credentials, and machine-local configuration
+.env
+.env.*
+!.env.example
+**/.aws/
+**/credentials
+**/credentials.*
+**/*secret*.json
+**/secrets/
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+
+# Local deployment configuration and generated Syndicate state
+backend/restaurant-backend-app/.syndicate-config-restaurant-backend-app/
+**/.syndicate-config-*/
+**/.syndicate
+**/logs/
+**/bundles/
+**/lambda_config.json
+**/deployment_resources.json
+**/swagger*.json
+**/environment*.ts
+
+# IDE / editor
+.idea/
+.vscode/
+*.iml
+*.code-workspace
+*.user
+*.suo
+.vs/
+.history/
+
+# OS
+.DS_Store
+._*
+Thumbs.db
+~$*
+
+# Node
+node_modules/
+**/node_modules/
+/frontend/restaurant-frontend-app/dist/
+**/.angular/cache/
+coverage/
+
+# Python
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+
+# .NET
+**/bin/
+**/obj/
+TestResults/
+
+# Terraform and generated infrastructure state
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.json
+crash.log
+crash.*.log
+
+# VM and local machine state
+.vagrant/
+*.vbox
+*.vmx
+*.vmdk
+*.box
