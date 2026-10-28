@@ -1,6 +1,7 @@
 # Secrets, credentials, and machine-local configuration
 .env
 .env.*
+.envrc
 !.env.example
 **/.aws/
 **/credentials
@@ -11,8 +12,14 @@
 *.key
 *.p12
 *.pfx
+*.p8
+*.der
 *.jks
 *.keystore
+**/id_rsa
+**/id_rsa.*
+**/id_ed25519
+**/id_ed25519.*
 
 # Local deployment configuration and generated Syndicate state
 backend/restaurant-backend-app/.syndicate-config-restaurant-backend-app/

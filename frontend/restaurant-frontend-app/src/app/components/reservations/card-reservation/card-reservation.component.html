@@ -141,6 +141,24 @@
           >
             Edit
           </button>
+          @if (r().guestCount > 1) {
+            <button
+              type="button"
+              class="button button--secondary button--large"
+              (click)="inviteGuests.emit(r())"
+            >
+              Invite Guests
+            </button>
+          }
+          @if (canViewGroupOrder()) {
+            <button
+              type="button"
+              class="button button--primary button--large"
+              (click)="onViewGroupOrder()"
+            >
+              View Group Order
+            </button>
+          }
         }
 
         @if (role() === Roles.WAITER) {
@@ -158,7 +176,7 @@
               class="button button--primary button--large"
               (click)="onPreOrderWaiter()"
             >
-              Pre-order
+              Add Pre-Order
             </button>
           }
         } @else if (role() === Roles.CUSTOMER) {
@@ -167,7 +185,7 @@
             class="button button--primary button--large"
             (click)="onPreOrder()"
           >
-            Pre-order
+            Add Pre-Order
           </button>
         }
       }

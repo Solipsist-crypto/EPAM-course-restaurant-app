@@ -89,15 +89,6 @@ public class DishRepository : IDishRepository
             }
         }
 
-        if (resultDishes.Count == 0)
-        {
-            var allDishes = await _dynamoDbContext
-                .ScanAsync<Dish>(new List<ScanCondition>(), DynamoConfig.ScanConfig(DishTableName))
-                .GetRemainingAsync();
-
-            return allDishes;
-        }
-
         return resultDishes.Values.ToList();
     }
 

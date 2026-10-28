@@ -27,17 +27,33 @@
 .order-item-dish {
   display: flex;
   flex-direction: row;
+  align-items: center;
+  width: 100%;
+  box-sizing: border-box;
   padding: 24px;
   gap: 16px;
   border-radius: 8px;
+  background: color.$neutral-0;
   box-shadow: 0 0 10px 4px rgba(194, 194, 194, 0.5);
 }
 
 .dish-image {
+  display: block;
   min-width: 96px;
   height: 96px;
   border-radius: 400px;
+  object-fit: cover;
   box-shadow: 0 0 10px 4px rgba(194, 194, 194, 0.5);
+}
+
+.dish-image--fallback {
+  display: grid;
+  flex: 0 0 96px;
+  place-items: center;
+  background: color.$green-100;
+  color: color.$green-800;
+  font-size: 1.5rem;
+  font-weight: 500;
 }
 
 .container {
@@ -45,13 +61,45 @@
   flex-direction: column;
   gap: 16px;
   border-radius: 8px;
+  min-width: 0;
   width: 100%;
 }
 
 .details {
   display: flex;
   flex-direction: row;
+  align-items: center;
   justify-content: space-between;
+  gap: 12px;
+}
+
+.dish-name {
+  min-width: 0;
+}
+
+.dish-name .body-bold {
+  overflow-wrap: anywhere;
+}
+
+.quantity-buttons {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.quantity-buttons .icon-button,
+.details .icon-button {
+  display: grid;
+  flex: 0 0 36px;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+}
+
+.quantity-buttons .icon-button img,
+.details .icon-button img {
+  width: 20px;
+  height: 20px;
 }
 
 .dish-name {
@@ -97,4 +145,27 @@
   line-height: 16px;
   letter-spacing: 0;
   vertical-align: middle;
+}
+
+@media (max-width: 500px) {
+  .order-item-dish {
+    padding: 16px;
+    gap: 12px;
+  }
+
+  .dish-image,
+  .dish-image--fallback {
+    min-width: 64px;
+    width: 64px;
+    height: 64px;
+    flex-basis: 64px;
+  }
+
+  .quantity {
+    align-items: flex-start;
+  }
+
+  .quantity-buttons {
+    gap: 4px;
+  }
 }

@@ -6,6 +6,7 @@ export const DishTypeLabels: Record<DishType, string> = {
   [DishType.Appetizer]: 'Appetizers',
   [DishType.MainCourse]: 'Main Courses',
   [DishType.Dessert]: 'Desserts',
+  [DishType.Drink]: 'Drinks',
 };
 
 export const DishSortingLabels: Record<DishSort, string> = {

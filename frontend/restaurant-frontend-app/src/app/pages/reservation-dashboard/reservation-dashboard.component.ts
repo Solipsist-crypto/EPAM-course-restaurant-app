@@ -22,6 +22,7 @@ import {
 import { AuthenticationService } from '@app/auth/services/authentication.service';
 import { CardReservationComponent } from '@app/components/reservations/card-reservation/card-reservation.component';
 import { FeedbackWindowComponent } from '@app/components/reservations/feedback-window/feedback-window.component';
+import { ReservationInviteModalComponent } from '@app/components/reservations/reservation-invite-modal/reservation-invite-modal.component';
 import { ReservationConfirmedComponent } from '@app/components/reservations/reservation-confirmed/reservation-confirmed.component';
 import { MakeReservationComponent } from '@app/components/tables/make-reservation/make-reservation.component';
 import { FeedbackUpdatedEvent } from '@app/models/feedbacks/feedback.model';
@@ -59,6 +60,7 @@ interface ReservationStatusView {
     MakeReservationComponent,
     ReservationConfirmedComponent,
     FeedbackWindowComponent,
+    ReservationInviteModalComponent,
   ],
   templateUrl: './reservation-dashboard.component.html',
   styleUrl: './reservation-dashboard.component.scss',
@@ -96,6 +98,7 @@ export class ReservationDashboardComponent implements OnInit {
   readonly showEditReservationModal = signal(false);
   readonly showEditReservationConfirmed = signal(false);
   readonly showFeedbackModal = signal(false);
+  readonly showInviteGuestsModal = signal(false);
 
   readonly statusEnum: Record<number, ReservationStatusView> = {
     [ReservationStatusCustomer.Reserved]: {
@@ -112,7 +115,7 @@ export class ReservationDashboardComponent implements OnInit {
     },
     [ReservationStatusCustomer.Finished]: {
       class: 'finished',
-      label: 'Finished',
+      label: 'Completed',
     },
   };
 
@@ -136,6 +139,7 @@ export class ReservationDashboardComponent implements OnInit {
         customerId:
           reservation.customerId ?? this.customerId(),
         locationAddress: reservation.locationAddress,
+        locationId: reservation.locationId,
         restaurantName: reservation.restaurantName,
         tableCapacity:
           this.selectedTable()?.capacity ??
@@ -217,6 +221,15 @@ export class ReservationDashboardComponent implements OnInit {
           );
         },
       });
+  }
+
+  openInviteGuests(reservation: ReservationCustomer): void {
+    this.selectedReservation.set(reservation);
+    this.showInviteGuestsModal.set(true);
+  }
+
+  closeInviteGuests(): void {
+    this.showInviteGuestsModal.set(false);
   }
 
   openEditModal(reservation: ReservationCustomer): void {

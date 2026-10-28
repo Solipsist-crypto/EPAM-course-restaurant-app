@@ -103,7 +103,7 @@ export class GuestPreOrderPageComponent {
             dishId: dish.id,
             title: dish.name,
             price: dish.price,
-            imageUrl: dish.imageUrl,
+            imageUrl: dish.imageUrl ?? null,
         });
 
         if (added) {
@@ -125,7 +125,7 @@ export class GuestPreOrderPageComponent {
         return {
             id: dish.id,
             name: dish.name,
-            imageUrl: dish.imageUrl || 'assets/img/dish.png',
+            imageUrl: dish.imageUrl ?? null,
             price: dish.price,
             state: dish.selectable ? dish.state : 'OutOfStock',
             weight: dish.weight ?? '',
