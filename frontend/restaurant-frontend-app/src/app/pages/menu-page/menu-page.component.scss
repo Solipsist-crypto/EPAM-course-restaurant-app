@@ -63,11 +63,19 @@
 }
 
 .pre-order-notice {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
   padding: 0.5rem 2.5rem;
   background-color: color.$green-100;
   border-radius: 8px;
   font-size: 0.875rem;
   text-align: center;
+
+  span {
+    min-width: 0;
+  }
 }
 
 .page-navigation__location {
@@ -161,6 +169,12 @@
 
 // ✅ MEDIA QUERIES
 @media screen and (max-width: 768px) {
+  .pre-order-notice {
+    flex-direction: column;
+    margin: 0 0.5rem;
+    padding: 1rem;
+  }
+
   .hero-section {
     position: relative;
 

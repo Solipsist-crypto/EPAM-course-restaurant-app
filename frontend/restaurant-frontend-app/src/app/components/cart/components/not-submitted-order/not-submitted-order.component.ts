@@ -8,6 +8,7 @@ import {
 } from '@angular/core';
 
 import { Order } from '@app/models/orders/order.model';
+import { ReservationStatus } from '@app/models/reservations/reservation.model';
 
 @Component({
   selector: 'app-not-submitted-order',
@@ -19,6 +20,11 @@ import { Order } from '@app/models/orders/order.model';
 })
 export class NotSubmittedOrderComponent {
   readonly order = input.required<Order>();
+  readonly failedImages = new Set<string>();
+
+  readonly canModify = computed(
+    () => this.order().reservationStatus === ReservationStatus.Reserved,
+  );
 
   readonly submitted = output<string>();
   readonly addDish = output<void>();
@@ -35,7 +41,15 @@ export class NotSubmittedOrderComponent {
     ),
   );
 
+  onDishImageError(itemId: string): void {
+    this.failedImages.add(itemId);
+  }
+
   incrementItemQuantity(itemId: string): void {
+    if (!this.canModify()) {
+      return;
+    }
+
     const item = this.findOrderItem(itemId);
 
     if (item) {
@@ -44,6 +58,10 @@ export class NotSubmittedOrderComponent {
   }
 
   decrementItemQuantity(itemId: string): void {
+    if (!this.canModify()) {
+      return;
+    }
+
     const item = this.findOrderItem(itemId);
 
     if (item && item.quantity > 1) {
@@ -52,15 +70,21 @@ export class NotSubmittedOrderComponent {
   }
 
   submit(): void {
-    this.submitted.emit(this.order().orderId);
+    if (this.canModify()) {
+      this.submitted.emit(this.order().orderId);
+    }
   }
 
   addDishToOrder(): void {
-    this.addDish.emit();
+    if (this.canModify()) {
+      this.addDish.emit();
+    }
   }
 
   removeDishFromOrder(itemId: string): void {
-    this.removeDish.emit(itemId);
+    if (this.canModify()) {
+      this.removeDish.emit(itemId);
+    }
   }
 
   private findOrderItem(itemId: string) {

@@ -4,6 +4,7 @@ import {
 } from '@angular/core/testing';
 
 import { Order } from '@app/models/orders/order.model';
+import { ReservationStatus } from '@app/models/reservations/reservation.model';
 
 import { SubmitOrderModalComponent } from './submit-order-modal.component';
 
@@ -16,6 +17,7 @@ describe('SubmitOrderModalComponent', () => {
     reservationAddress: 'Test address',
     reservationId: 'res-1',
     reservationTime: '2026-09-07T12:15:00Z',
+    reservationStatus: ReservationStatus.Reserved,
     status: 1,
     orderItems: [],
   } as Order;
@@ -61,5 +63,20 @@ describe('SubmitOrderModalComponent', () => {
     component.closeModal();
 
     expect(component.closed.emit).toHaveBeenCalled();
+  });
+
+  it('should disable edit and cancel for a cancelled reservation', () => {
+    fixture.componentRef.setInput('order', {
+      ...order,
+      reservationStatus: ReservationStatus.Cancelled,
+    });
+    fixture.detectChanges();
+
+    const buttons = fixture.nativeElement.querySelectorAll(
+      '.actions button',
+    ) as NodeListOf<HTMLButtonElement>;
+
+    expect(buttons[0].disabled).toBeTrue();
+    expect(buttons[1].disabled).toBeTrue();
   });
 });

@@ -1,30 +1,47 @@
-# Restaurant Reservation Backend & Frontend
+# Restaurant Reservation & Group Pre-Order
 
-This project implements a restaurant reservation workflow with group guest sessions, owner authorization, and order consolidation. It includes both the AWS Lambda backend deployed with Syndicate and the Angular frontend that consumes the deployed API.
+A restaurant reservation application with an Angular frontend and an AWS Lambda backend. Customers can reserve a table, invite guests to build a group pre-order, review the combined order, and submit it to the restaurant.
 
-## Implemented features
+**Live website:** [d156bsfqw0ujop.cloudfront.net](https://d156bsfqw0ujop.cloudfront.net)  
+**Backend:** deployed to AWS using AWS Syndicate; the API uses API Gateway, Lambda, and DynamoDB.
 
-### Level 1: guest participation and group session listing
-- `GET /guest/groups/{groupReservationId}/sessions`
-- Returns all participants for a group reservation, including each guest's added dishes, totals, and the overall group total.
-- Owner access is enforced using Cognito JWT authorization and the reservation ownership records stored in DynamoDB (`isOwnerSession = true` and `ownerUserId`).
+## Run locally
 
-### Level 2: owner confirmation and order creation
-- `GET /reservations/{reservationId}/guest-session-id`
-- `POST /group-reservations/{groupReservationId}/submit`
-- Retrieves the owner guest session identity and creates the consolidated order for the reservation as part of the submit flow.
-- The application automatically creates an empty `Order` record when a reservation is created, so submit logic does not depend on manual database setup.
+### Frontend
 
-### Level 3: guest session removal
-- `DELETE /guest/groups/{groupReservationId}/sessions/{guestSessionId}`
-- Only the group owner may remove a guest session.
-- The API validates group ownership and session membership, returns `400 Bad Request` for a mismatched reservation, and `404 Not Found` when the guest session does not exist.
-- On success, it returns the updated participant list and the refreshed total.
+Prerequisite: Node.js 22.x and npm.
 
-## Authentication and architecture
-- Authentication for owner and protected endpoints uses Cognito JWT tokens.
-- The backend runs as AWS Lambda handlers and uses DynamoDB tables such as `GroupReservations`, `GuestSessions`, `Reservations`, and `Orders`.
-- Orders are created automatically during reservation creation to simplify downstream group-order consolidation.
+From the repository root, run in PowerShell:
+
+```powershell
+cd frontend\restaurant-frontend-app
+npm ci
+npm start
+```
+
+Open [http://localhost:4200](http://localhost:4200). The development frontend is configured to use the deployed development API, so AWS-backed features require a network connection and valid Cognito sign-in.
+
+Run the homework test suite from the frontend directory:
+
+```powershell
+npm run test:hw
+```
+
+All **67 homework tests pass**.
+
+### Backend
+
+The backend is deployed to AWS and is not started as a local web server. To build or deploy it, configure AWS CLI credentials and AWS Syndicate, then follow the [Syndicate deployment instructions](#2-deploy-the-backend-with-syndicate) below.
+
+## Implemented levels
+
+- **Practical:** Restaurant browsing, reservations, menu, and cart flows.
+- **Level 1 — Group order UI:** Group-order page and participant cards, including the invite summary, participant orders, and totals.
+- **Level 2 — Group order behavior:** Load group sessions and status, consolidate submitted dishes, and submit the group pre-order.
+- **Level 3 — Real API integration:** Connect the group-order page to the AWS API, refresh open groups in the background, and support manual refresh.
+- **Bonus — Remove Guest:** The owner can remove a guest from the group order after confirmation; the backend enforces owner permissions and validates session membership.
+
+Owner and protected API operations use Cognito JWT authorization. The backend uses DynamoDB for reservations, group reservations, guest sessions, and orders.
 
 ## Deployment Guide
 

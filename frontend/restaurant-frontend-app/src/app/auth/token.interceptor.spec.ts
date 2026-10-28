@@ -12,10 +12,11 @@ describe('tokenInterceptor', () => {
   let http: HttpClient;
   let httpMock: HttpTestingController;
   let toastService: jasmine.SpyObj<ToastService>;
+  let authService: jasmine.SpyObj<AuthenticationService>;
 
   beforeEach(() => {
     toastService = jasmine.createSpyObj<ToastService>('ToastService', ['error']);
-    const authService = jasmine.createSpyObj<AuthenticationService>('AuthenticationService', [
+    authService = jasmine.createSpyObj<AuthenticationService>('AuthenticationService', [
       'getTokens',
     ]);
     authService.getTokens.and.returnValue(null);
@@ -35,6 +36,48 @@ describe('tokenInterceptor', () => {
 
   afterEach(() => {
     httpMock.verify();
+  });
+
+  it('adds the Cognito ID token to owner group-session requests', () => {
+    authService.getTokens.and.returnValue({
+      idToken: 'cognito-id-token',
+      accessToken: 'access-token',
+    });
+
+    http.get('https://test.api/guest/groups/group-1/sessions').subscribe();
+
+    const request = httpMock.expectOne('https://test.api/guest/groups/group-1/sessions');
+    expect(request.request.headers.get('Authorization')).toBe('Bearer cognito-id-token');
+    request.flush({ participants: [], total: 0 });
+  });
+
+  it('adds the Cognito ID token to owner guest-session deletion requests', () => {
+    authService.getTokens.and.returnValue({
+      idToken: 'cognito-id-token',
+      accessToken: 'access-token',
+    });
+
+    http.delete('https://test.api/guest/groups/group-1/sessions/session-1').subscribe();
+
+    const request = httpMock.expectOne(
+      'https://test.api/guest/groups/group-1/sessions/session-1',
+    );
+    expect(request.request.headers.get('Authorization')).toBe('Bearer cognito-id-token');
+    request.flush({ participants: [], total: 0 });
+  });
+
+  it('does not add the Cognito token to guest-session requests', () => {
+    authService.getTokens.and.returnValue({
+      idToken: 'cognito-id-token',
+      accessToken: 'access-token',
+    });
+
+    http.post('https://test.api/guest/sessions', { groupReservationId: 'group-1' }).subscribe();
+
+    const request = httpMock.expectOne('https://test.api/guest/sessions');
+    expect(request.request.headers.has('Authorization')).toBeFalse();
+    expect(authService.getTokens).not.toHaveBeenCalled();
+    request.flush({ guestSessionId: 'session-1' });
   });
 
   it('shows the server message in a toast for a 400 response', () => {

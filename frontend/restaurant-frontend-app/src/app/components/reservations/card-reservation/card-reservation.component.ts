@@ -92,6 +92,7 @@ export class CardReservationComponent {
   }>();
 
   readonly preOrder = output<CreateOrderRequest>();
+  readonly inviteGuests = output<ReservationCustomer>();
   readonly showWaiterOrderModal = signal(false);
 
   readonly statusView = computed<ReservationStatusView>(() => {
@@ -129,6 +130,13 @@ export class CardReservationComponent {
     return this.r().preOrder?.orderItems?.length ?? 0;
   });
 
+  readonly canViewGroupOrder = computed(
+    () =>
+      this.role() === Roles.CUSTOMER &&
+      this.r().status === ReservationStatusCustomer.Reserved &&
+      this.r().guestInviteLinkAvailable === true,
+  );
+
   readonly canOpenWaiterPreOrder = computed(() => {
     return (
       this.preOrderItemCount() > 0 ||
@@ -161,6 +169,7 @@ export class CardReservationComponent {
     const queryParams: Params = {
       preOrder: 'true',
       reservationId: reservation.id,
+      locationId: reservation.locationId,
       reservationLabel: [
         reservation.locationAddress,
         tableLabel,
@@ -172,6 +181,18 @@ export class CardReservationComponent {
     void this.router.navigate(['/menu'], {
       queryParams,
     });
+  }
+
+  onViewGroupOrder(): void {
+    if (!this.canViewGroupOrder()) {
+      return;
+    }
+
+    void this.router.navigate([
+      '/reservations',
+      this.r().id,
+      'group-order',
+    ]);
   }
   onPreOrderWaiter(): void {
     if (this.preOrderItemCount() > 0) {

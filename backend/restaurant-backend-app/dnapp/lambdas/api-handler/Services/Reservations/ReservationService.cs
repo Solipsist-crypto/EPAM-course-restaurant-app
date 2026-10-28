@@ -75,7 +75,7 @@ public class ReservationService : IReservationService
         if (request.GuestCount >= 2)
             await _groupReservationService.CreateGroupReservationAsync(reservation.Id, reservation.CustomerId);
 
-        return ReservationMapper.ToReservationResponse(reservation, location.Address);
+        return ReservationMapper.ToReservationResponse(reservation, location.Address, locationId: location.Id);
     }
 
     public async Task<string> GetLocationIdForReservation(string reservationId)
@@ -305,6 +305,6 @@ public class ReservationService : IReservationService
         var address = location?.Address ?? "Unknown address";
         Order? reservationOrder = await _orderService.GetOrderByReservationIdAsync(reservation.Id);
 
-        return ReservationMapper.ToReservationResponse(reservation, address, reservationOrder);
+        return ReservationMapper.ToReservationResponse(reservation, address, reservationOrder, locationId: location?.Id);
     }
 }
