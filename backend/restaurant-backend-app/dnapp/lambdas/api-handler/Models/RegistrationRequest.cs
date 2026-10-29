@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace APIHandler.Models;
@@ -43,4 +44,10 @@ public class RegistrationRequest
     /// </summary>
     [JsonPropertyName("confirmPassword")]
     public required string ConfirmPassword { get; set; }
+
+    /// <summary>
+    /// Gets or sets the user's optional dietary allergies.
+    /// </summary>
+    [JsonPropertyName("allergies")]
+    public List<string>? Allergies { get; set; }
 }

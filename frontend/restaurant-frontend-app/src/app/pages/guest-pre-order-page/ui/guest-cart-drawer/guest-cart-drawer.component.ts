@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
 import { GuestCartItem } from '@app/pages/guest-pre-order-page/state/guest-preorder.store'; 
+import { formatAllergen, matchingAllergens } from '@app/shared/helpers/group-dietary-safety';
 
 @Component({
     standalone: true,
@@ -13,6 +14,7 @@ import { GuestCartItem } from '@app/pages/guest-pre-order-page/state/guest-preor
 export class GuestCartDrawerComponent {
     readonly open = input(false);
     readonly items = input<GuestCartItem[]>([]);
+    readonly allergies = input<string[]>([]);
     readonly total = input(0);
     readonly busy = input(false);
     readonly error = input<string | null>(null);
@@ -23,4 +25,17 @@ export class GuestCartDrawerComponent {
     readonly dec = output<string>();
     readonly remove = output<string>();
     readonly submitted = output<void>();
+    readonly failedImages = new Set<string>();
+
+    onDishImageError(dishId: string): void {
+        this.failedImages.add(dishId);
+    }
+
+    formatAllergen(allergen: string): string {
+        return formatAllergen(allergen);
+    }
+
+    conflictingAllergens(allergens: string[] = []): string[] {
+        return matchingAllergens(this.allergies(), allergens);
+    }
 }

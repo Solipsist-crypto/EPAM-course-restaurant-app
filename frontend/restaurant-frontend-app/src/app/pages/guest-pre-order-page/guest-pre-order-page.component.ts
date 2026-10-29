@@ -10,6 +10,7 @@ import { DishCardComponent } from '@app/shared/custom-components/dish-card/dish-
 import { MainCoverImageComponent } from '@app/shared/custom-components/main-cover-image/main-cover-image.component';
 import { ToastService } from '@app/services/toast/toast.service';
 import { GuestPreorderStore } from './state/guest-preorder.store';
+import { formatAllergen, matchingAllergens } from '@app/shared/helpers/group-dietary-safety';
 
 import { GuestNameModalComponent } from './ui/guest-name-modal/guest-name-modal.component';
 import { GuestCartDrawerComponent } from './ui/guest-cart-drawer/guest-cart-drawer.component';
@@ -99,11 +100,20 @@ export class GuestPreOrderPageComponent {
     }
 
     async addDishToCart(dish: DishListResponse): Promise<void> {
+        const conflicts = matchingAllergens(this.store.guestAllergies(), dish.allergens ?? []);
+        if (
+            conflicts.length &&
+            !window.confirm(`⚠️ Contains ${conflicts.map(formatAllergen).join(', ')}. Add this dish anyway?`)
+        ) {
+            return;
+        }
+
         const added = await this.store.addDish({
             dishId: dish.id,
             title: dish.name,
             price: dish.price,
-            imageUrl: dish.imageUrl,
+            imageUrl: dish.imageUrl ?? null,
+            allergens: dish.allergens ?? [],
         });
 
         if (added) {
@@ -125,7 +135,7 @@ export class GuestPreOrderPageComponent {
         return {
             id: dish.id,
             name: dish.name,
-            imageUrl: dish.imageUrl || 'assets/img/dish.png',
+            imageUrl: dish.imageUrl ?? null,
             price: dish.price,
             state: dish.selectable ? dish.state : 'OutOfStock',
             weight: dish.weight ?? '',
@@ -136,7 +146,16 @@ export class GuestPreOrderPageComponent {
             carbohydrates: dish.carbohydrates ?? '',
             fats: dish.fats ?? '',
             vitamins: dish.vitamins ?? '',
+            allergens: dish.allergens ?? [],
         };
+    }
+
+    conflictingAllergens(dish: DishListResponse): string[] {
+        return matchingAllergens(this.store.guestAllergies(), dish.allergens ?? []);
+    }
+
+    formatAllergen(allergen: string): string {
+        return formatAllergen(allergen);
     }
 
     noop(): void {

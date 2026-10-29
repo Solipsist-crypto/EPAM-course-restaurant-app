@@ -20,6 +20,11 @@ import { ToastService } from '@app/services/toast/toast.service';
 
 type ProfileControlName = 'firstName' | 'lastName';
 
+interface AllergyOption {
+  value: string;
+  label: string;
+}
+
 @Component({
   selector: 'app-general-user-info',
   standalone: true,
@@ -39,6 +44,15 @@ export class GeneralInformationComponent {
   readonly profileImage = signal<string | null>(null);
   readonly isSaving = signal(false);
   readonly isReadingPhoto = signal(false);
+  readonly allergyOptions: AllergyOption[] = [
+    { value: 'peanuts', label: 'Peanuts' },
+    { value: 'dairy', label: 'Dairy' },
+    { value: 'gluten', label: 'Gluten' },
+    { value: 'seafood', label: 'Seafood' },
+    { value: 'eggs', label: 'Eggs' },
+    { value: 'soy', label: 'Soy' },
+    { value: 'berries', label: 'Berries' },
+  ];
 
   private photoChanged = false;
   private imageRevision = 0;
@@ -62,6 +76,7 @@ export class GeneralInformationComponent {
         Validators.pattern(/^[A-Za-z'-]+$/),
       ],
     ],
+    allergies: this.formBuilder.nonNullable.control<string[]>([]),
   });
 
   constructor() {
@@ -92,6 +107,7 @@ export class GeneralInformationComponent {
         this.userForm.patchValue({
           firstName: user.firstName,
           lastName: user.lastName,
+          allergies: user.allergies ?? [],
         });
 
         if (userChanged) {
@@ -103,6 +119,16 @@ export class GeneralInformationComponent {
   isInvalid(controlName: ProfileControlName): boolean {
     const control = this.userForm.controls[controlName];
     return control.invalid && control.touched;
+  }
+
+  toggleAllergy(allergy: string, event: Event): void {
+    const checked = (event.target as HTMLInputElement).checked;
+    const selected = this.userForm.controls.allergies.value;
+    this.userForm.controls.allergies.setValue(
+      checked
+        ? [...new Set([...selected, allergy])]
+        : selected.filter((item) => item !== allergy),
+    );
   }
 
   onFileSelected(event: Event): void {
@@ -166,7 +192,11 @@ export class GeneralInformationComponent {
       return;
     }
 
-    const { firstName, lastName } = this.userForm.getRawValue();
+    const { firstName, lastName, allergies } = this.userForm.getRawValue();
+    const currentAllergies = user.allergies ?? [];
+    const allergiesChanged =
+      allergies.length !== currentAllergies.length ||
+      allergies.some((allergy) => !currentAllergies.includes(allergy));
     const imageToUpload = this.photoChanged ? this.profileImage() : null;
     const imageRevision = this.imageRevision;
     const userRevision = this.userRevision;
@@ -174,7 +204,11 @@ export class GeneralInformationComponent {
 
     this.isSaving.set(true);
 
-    this.authenticationService.editProfile(firstName, lastName)
+    const profileUpdate$ = allergiesChanged
+      ? this.authenticationService.editProfile(firstName, lastName, allergies)
+      : this.authenticationService.editProfile(firstName, lastName);
+
+    profileUpdate$
       .pipe(
         concatMap((response) => {
           if (userRevision !== this.userRevision) {

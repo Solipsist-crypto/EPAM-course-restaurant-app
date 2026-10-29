@@ -1,12 +1,14 @@
 @use 'app/shared/styles/abstracts/colors' as color;
 
 .time-slot-container {
+  appearance: none;
   border: 1px solid color.$green-600;
   box-sizing: border-box;
   border-radius: 8px;
   background-color: transparent;
   display: inline-block;
   color: color.$green-600;
+  font: inherit;
   min-height: 24px;
   padding: 4px 8px;
   cursor: pointer;

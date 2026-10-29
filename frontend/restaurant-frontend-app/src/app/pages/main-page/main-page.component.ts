@@ -34,6 +34,7 @@ import { LoginModalComponent } from '@app/auth/components/login/login-modal/logi
 export class MainPageComponent implements OnInit {
   dishes: DishListResponse[] = [];
   locations: LocationResponse[] = [];
+  readonly failedDishImages = new Set<string>();
 
   showFeedbackModal = false;
   selectedReservationCustomer!: ReservationCustomer;
@@ -85,12 +86,16 @@ export class MainPageComponent implements OnInit {
     this.dishesService.getPopularDishes().subscribe((data) => {
       this.dishes = data.slice(0, 4).map((dish) => ({
         ...dish,
-        imageUrl: dish.imageUrl || 'assets/img/dish.png',
+        imageUrl: dish.imageUrl,
         name: dish.name || 'Unknown Dish',
         price: dish.price || 0,
         weight: dish.weight || 'N/A',
       }));
     });
+  }
+
+  onDishImageError(dishId: string): void {
+    this.failedDishImages.add(dishId);
   }
 
   loadLocations(): void {

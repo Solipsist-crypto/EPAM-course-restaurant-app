@@ -16,7 +16,8 @@ public record Participant(
     [property: JsonPropertyName("name")] string Name,
     [property: JsonPropertyName("items")] IEnumerable<OrderItemResponse> Items,
     [property: JsonPropertyName("total")] decimal Total,
-    [property: JsonPropertyName("isSubmitted")] bool IsSubmitted);
+    [property: JsonPropertyName("isSubmitted")] bool IsSubmitted,
+    [property: JsonPropertyName("allergies")] IEnumerable<string> Allergies);
 
 public enum ParticipantType
 {

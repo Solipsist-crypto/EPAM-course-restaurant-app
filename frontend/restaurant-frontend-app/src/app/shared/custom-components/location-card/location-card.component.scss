@@ -1,4 +1,5 @@
 @use 'app/shared/styles/card' as card;
+@use 'app/shared/styles/abstracts/colors' as color;
 
 :host {
   display: contents;
@@ -13,18 +14,19 @@
 
   .location-image {
     width: 100%;
-    aspect-ratio: 432 / 238;
+    height: 243px;
+    object-fit: cover;
     @include card.common-image();
   }
 
   .location-text-block {
     flex-grow: 1;
-    background-color: #ffffff;
+    background-color: color.$neutral-0;
     padding: 1.5rem;
     display: flex;
     flex-direction: column;
     gap: 1rem;
-    box-shadow: 0 0 0.625rem 0.25rem #c2c2c280;
+    box-shadow: 0 0 0.625rem 0.25rem color.$shadow;
 
     .location-info,
     .tables-info {
@@ -35,7 +37,8 @@
 
     .location-info {
       .location-text {
-        font-size: 1.625rem;
+        font-size: 1.5rem;
+        line-height: 1.4;
       }
     }
 
@@ -72,8 +75,7 @@
 
     .location-image {
       flex: none;
-      height: auto;
-      aspect-ratio: 16 / 10;
+      height: 243px;
     }
 
     .location-text-block {

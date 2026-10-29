@@ -20,10 +20,17 @@
                 <div class="list">
                     @for (it of items(); track it.dishId) {
                         <div class="item">
-                            <img class="img" [src]="it.imageUrl" alt="" />
+                            @if (it.imageUrl && !failedImages.has(it.dishId)) {
+                                <img class="img" [src]="it.imageUrl" [alt]="it.title || 'Dish'" (error)="onDishImageError(it.dishId)" />
+                            } @else {
+                                <span class="img img-fallback" aria-hidden="true">{{ it.title?.charAt(0) || '?' }}</span>
+                            }
 
                             <div class="info">
-                                <div class="name">{{ it.title }}</div>
+                                <div class="name">{{ it.title || 'Unknown dish' }}</div>
+                                @for (allergen of conflictingAllergens(it.allergens); track allergen) {
+                                    <div class="allergen-warning">⚠️ Contains {{ formatAllergen(allergen) }}</div>
+                                }
                                 <div class="sub">Expected ready time - 10 minutes</div>
 
                                 <div class="qty">
@@ -48,7 +55,7 @@
                                     <img src="assets/svg/trash.svg" alt="" />
                             </button>
 
-                            <div class="price">{{ it.price | currency: '$' }}</div>
+                            <div class="price">{{ it.price * it.qty | currency: '$' }}</div>
                             </div>
                         </div>
                     }

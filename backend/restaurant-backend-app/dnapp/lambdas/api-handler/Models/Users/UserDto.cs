@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using System.Collections.Generic;
 
 namespace APIHandler.Models.Users;
 
@@ -18,4 +19,7 @@ public class UserDto
 
     [JsonPropertyName("role")]
     public required string Role { get; set; }
+
+    [JsonPropertyName("allergies")]
+    public required IEnumerable<string> Allergies { get; set; }
 }

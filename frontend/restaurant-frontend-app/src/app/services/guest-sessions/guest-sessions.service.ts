@@ -5,6 +5,7 @@ import { API_BASE_URL } from '@app/shared/config/api-base-url.token';
 export interface CreateGuestSessionRequest {
     groupReservationId: string;
     guestName: string;
+    allergies?: string[];
 }
 
 export interface CreateGuestSessionResponse {
@@ -26,12 +27,33 @@ export interface GuestMenuDish {
     imageUrl?: string | null;
     state: string;        // "Available" | "On Stop"
     selectable: boolean;  // true/false
+    allergens?: string[];
 }
 
 export type GuestMenuCategoryKey = string;
 
+type GuestMenuDishPayload = Partial<GuestMenuDish> & {
+    Id?: string;
+    Name?: string;
+    Description?: string;
+    Price?: number;
+    Weight?: string;
+    Calories?: string;
+    Proteins?: string;
+    Fats?: string;
+    Carbohydrates?: string;
+    Vitamins?: string;
+    ImageUrl?: string | null;
+    State?: string;
+    Selectable?: boolean;
+    Allergens?: string[];
+};
+
 export interface GuestMenuResponse {
-    dishes: Record<GuestMenuCategoryKey, GuestMenuDish[]>;
+    dishes?: Record<GuestMenuCategoryKey, GuestMenuDishPayload[]>;
+    Dishes?: Record<GuestMenuCategoryKey, GuestMenuDishPayload[]>;
+    allergies?: string[];
+    Allergies?: string[];
 }
 
 @Injectable({ providedIn: 'root' })

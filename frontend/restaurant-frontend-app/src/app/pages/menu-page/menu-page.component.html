@@ -21,8 +21,12 @@
   <section class="info-section">
     @if (isPreOrderEnabled) {
       <div class="pre-order-notice">
-        You are making a pre-order for a reservation <strong>{{ preOrderReservationLabel }}</strong
-        >.
+        <span>
+          You are making a pre-order for a reservation <strong>{{ preOrderReservationLabel }}</strong>.
+        </span>
+        <button type="button" class="button button--primary button--large" (click)="goToCart()">
+          Go to Cart
+        </button>
       </div>
     }
   </section>
@@ -61,7 +65,13 @@
             (dishClicked)="openModal(dish)"
             (preOrderClicked)="addDishToCart(dish)"
             maxWidth="288px"
-          ></app-dish-card>
+          >
+            @if (conflictingAllergens(dish).length) {
+              <p dish-footer class="allergen-warning" role="alert">
+                ⚠️ Contains {{ conflictingAllergens(dish).map(formatAllergen).join(', ') }}
+              </p>
+            }
+          </app-dish-card>
         }
       </div>
     </div>

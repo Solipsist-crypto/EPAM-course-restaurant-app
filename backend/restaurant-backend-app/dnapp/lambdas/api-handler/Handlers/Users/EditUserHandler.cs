@@ -38,10 +38,10 @@ public class EditUserHandler : IApiRequestHandler
             return ResponseBuilder.CreateErrorResponse(401, "Email not found in token claims", context.Logger);
         }
 
-        return TryUpdateUser(editUserRequest, context.Logger, userEmail);
+        return await TryUpdateUserAsync(editUserRequest, context.Logger, userEmail);
     }
 
-    private APIGatewayProxyResponse TryUpdateUser(EditUserRequest editUserRequest, ILambdaLogger logger, string userEmail)
+    private async Task<APIGatewayProxyResponse> TryUpdateUserAsync(EditUserRequest editUserRequest, ILambdaLogger logger, string userEmail)
     {
         var updateRequest = new AdminUpdateUserAttributesRequest
         {
@@ -54,7 +54,16 @@ public class EditUserHandler : IApiRequestHandler
             ]
         };
 
-        var result = _cognitoClient.AdminUpdateUserAttributesAsync(updateRequest).Result;
+        if (editUserRequest.Allergies is not null)
+        {
+            updateRequest.UserAttributes.Add(new AttributeType
+            {
+                Name = "custom:allergies",
+                Value = System.Text.Json.JsonSerializer.Serialize(editUserRequest.Allergies)
+            });
+        }
+
+        var result = await _cognitoClient.AdminUpdateUserAttributesAsync(updateRequest);
 
         return result.HttpStatusCode == HttpStatusCode.OK
             ? ResponseBuilder.CreateSuccessResponse("User information updated successfully.")
@@ -82,10 +91,19 @@ public class EditUserHandler : IApiRequestHandler
             return (ResponseBuilder.CreateErrorResponse(400, "Invalid request body.", context.Logger), null);
         }
 
+        if (editUserRequest is null)
+        {
+            return (ResponseBuilder.CreateErrorResponse(400, "Invalid request body.", context.Logger), null);
+        }
+
         try
         {
-            PersonalDataValidator.ValidateName(editUserRequest!.FirstName, "First name");
+            PersonalDataValidator.ValidateName(editUserRequest.FirstName, "First name");
             PersonalDataValidator.ValidateName(editUserRequest.LastName, "Last name");
+            if (editUserRequest.Allergies is not null)
+            {
+                editUserRequest.Allergies = AllergyHelper.Normalize(editUserRequest.Allergies);
+            }
         }
         catch (ValidationException e)
         {

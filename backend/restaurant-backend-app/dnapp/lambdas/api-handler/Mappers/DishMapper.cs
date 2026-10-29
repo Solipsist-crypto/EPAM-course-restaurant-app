@@ -25,6 +25,7 @@ public class DishMapper
             Carbohydrates = createDishRequest.Carbohydrates,
             Vitamins = createDishRequest.Vitamins,
             State = createDishRequest.State,
+            Allergens = createDishRequest.Allergens ?? [],
         };
     }
 
@@ -45,10 +46,11 @@ public class DishMapper
             Fats = dish.Fats,
             Proteins = dish.Proteins,
             Vitamins = dish.Vitamins,
+            Allergens = dish.Allergens ?? [],
         };
     }
 
-    public static DishResponse ToDishResponse(Dish dish)
+    public static DishResponse ToDishResponse(Dish dish, bool hasConflict = false)
     {
         return new DishResponse
         {
@@ -67,6 +69,8 @@ public class DishMapper
                 ? null
                 : dish.ImageUrl,
             State = FormatDishState(dish.State),
+            Allergens = dish.Allergens ?? [],
+            HasConflict = hasConflict,
         };
     }
 
@@ -88,6 +92,7 @@ public class DishMapper
             DishType.Appetizer => DishTypeLabels.Appetizer,
             DishType.MainCourse => DishTypeLabels.MainCourse,
             DishType.Dessert => DishTypeLabels.Dessert,
+            DishType.Drink => DishTypeLabels.Drink,
             _ => "Unknown"
         };
     }

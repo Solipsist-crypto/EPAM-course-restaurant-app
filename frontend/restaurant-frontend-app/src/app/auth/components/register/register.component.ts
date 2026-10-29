@@ -3,6 +3,7 @@ import { GreenTastyImageComponent } from '../green-tasty-image/green-tasty-image
 import { Component, OnInit, inject, ChangeDetectionStrategy } from '@angular/core';
 import {
   FormBuilder,
+  FormArray,
   FormControl,
   FormGroup,
   ReactiveFormsModule,
@@ -32,6 +33,16 @@ import { ConfirmPasswordComponent } from '@app/shared/custom-components/confirm-
   standalone: true,
 })
 export class RegisterComponent implements OnInit {
+  readonly allergyOptions = [
+    { value: 'peanuts', label: 'Peanuts' },
+    { value: 'dairy', label: 'Dairy' },
+    { value: 'gluten', label: 'Gluten' },
+    { value: 'seafood', label: 'Seafood' },
+    { value: 'eggs', label: 'Eggs' },
+    { value: 'soy', label: 'Soy' },
+    { value: 'berries', label: 'Berries' },
+  ];
+
   registerForm!: FormGroup;
   private formBuilder = inject(FormBuilder);
   private formValidatorsService = inject(FormValidatorsService);
@@ -65,6 +76,9 @@ export class RegisterComponent implements OnInit {
         ],
         password: ['', [Validators.required, Validators.minLength(8), Validators.maxLength(16)]],
         confirmPassword: ['', Validators.required],
+        allergies: this.formBuilder.array(
+          this.allergyOptions.map(() => this.formBuilder.control(false, { nonNullable: true })),
+        ),
       },
       { validators: (control) => this.formValidatorsService.passwordMatchValidator(control) }
     );
@@ -90,15 +104,23 @@ export class RegisterComponent implements OnInit {
     return this.registerForm.get('confirmPassword') as FormControl;
   }
 
+  get allergies(): FormArray<FormControl<boolean>> {
+    return this.registerForm.get('allergies') as FormArray<FormControl<boolean>>;
+  }
+
   async onSubmit() {
     if (this.registerForm.valid) {
-      const registerData = this.registerForm.value;
+      const registerData = this.registerForm.getRawValue();
+      const selectedAllergies = this.allergies.controls.flatMap((control, index) =>
+        control.value ? [this.allergyOptions[index].value] : [],
+      );
       const result = await this.authenticationService.register(
         registerData.firstName,
         registerData.lastName,
         registerData.email,
         registerData.password,
-        registerData.confirmPassword
+        registerData.confirmPassword,
+        selectedAllergies,
       );
       this.unsuccessfulRegistration = !result.success;
       this.errorMessage = result.message || null;

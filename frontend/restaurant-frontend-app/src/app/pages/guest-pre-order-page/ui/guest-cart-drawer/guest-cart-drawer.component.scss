@@ -76,6 +76,15 @@
   object-fit: cover;
 }
 
+.img-fallback {
+  display: grid;
+  place-items: center;
+  background: color.$green-100;
+  color: color.$green-800;
+  font-size: 1.25rem;
+  font-weight: 500;
+}
+
 .info {
   min-width: 0;
 }
@@ -83,6 +92,13 @@
 .name {
   font-weight: 500;
   overflow-wrap: anywhere;
+}
+
+.allergen-warning {
+  margin-top: 4px;
+  color: color.$red-400;
+  font-size: 0.8rem;
+  font-weight: 600;
 }
 
 .sub {
