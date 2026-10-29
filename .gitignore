@@ -81,3 +81,5 @@ crash.*.log
 *.vmx
 *.vmdk
 *.box
+
+green-and-tasty/
