@@ -10,6 +10,7 @@ import {
 } from '@app/models/reservations/reservation.model';
 import { PreOrdersService } from '@app/services/pre-orders/pre-orders.service';
 import { ReservationService } from '@app/services/reservation/reservation.service';
+import { AuthenticationService } from '@app/auth/services/authentication.service';
 
 import { CartComponent } from './cart.component';
 
@@ -63,6 +64,10 @@ describe('CartComponent', () => {
         {
           provide: ReservationService,
           useValue: reservationServiceMock,
+        },
+        {
+          provide: AuthenticationService,
+          useValue: { user$: of(null), getUser: () => null },
         },
       ],
     }).compileComponents();

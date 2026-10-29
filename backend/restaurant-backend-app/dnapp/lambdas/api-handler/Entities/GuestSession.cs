@@ -31,4 +31,7 @@ public class GuestSession
 
     [DynamoDBProperty("isSubmitted")]
     public bool IsSubmitted { get; set; }
+
+    [DynamoDBProperty("allergies")]
+    public List<string> Allergies { get; set; } = [];
 }

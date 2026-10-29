@@ -65,7 +65,13 @@
             (dishClicked)="openModal(dish)"
             (preOrderClicked)="addDishToCart(dish)"
             maxWidth="288px"
-          ></app-dish-card>
+          >
+            @if (conflictingAllergens(dish).length) {
+              <p dish-footer class="allergen-warning" role="alert">
+                ⚠️ Contains {{ conflictingAllergens(dish).map(formatAllergen).join(', ') }}
+              </p>
+            }
+          </app-dish-card>
         }
       </div>
     </div>

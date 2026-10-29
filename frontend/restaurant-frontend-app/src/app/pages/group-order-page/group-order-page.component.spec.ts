@@ -10,13 +10,19 @@ import { GroupSessionsResponse } from '@app/models/group-orders/group-sessions-r
 import { GuestInvite } from '@app/models/reservations/guest-invite.model';
 import { GroupOrderPageComponent } from './group-order-page.component';
 
-const caesar = { id: 'dish1', name: 'Caesar Salad', price: 180 };
+const caesar = {
+  id: 'dish1',
+  name: 'Caesar Salad',
+  price: 180,
+  allergens: ['dairy'],
+  hasConflict: true,
+};
 const tomYum = { id: 'dish2', name: 'Tom Yum', price: 220 };
 
 const SESSIONS: GroupSessionsResponse = {
   participants: [
     { id: 'owner', type: 'Owner', name: 'Yevhenii', isSubmitted: true, total: 180, items: [{ dish: caesar, quantity: 1 }] },
-    { id: 'andrii', type: 'Guest', name: 'Andrii', isSubmitted: true, total: 360, items: [{ dish: caesar, quantity: 2 }] },
+    { id: 'andrii', type: 'Guest', name: 'Andrii', allergies: ['dairy'], isSubmitted: true, total: 360, items: [{ dish: caesar, quantity: 2 }] },
     { id: 'olena', type: 'Guest', name: 'Olena', isSubmitted: false, total: 220, items: [{ dish: tomYum, quantity: 1 }] },
   ],
   total: 760,
@@ -76,6 +82,15 @@ describe('Рівень 2 · сторінка Owner Review', () => {
 
     it('бейдж статусу: «Collecting pre-orders»', () => {
       expect(create().element.textContent).toContain('Collecting pre-orders');
+    });
+
+    it('показує групові алергії та бейдж конфлікту для гостя', () => {
+      const { element } = create();
+
+      expect(element.textContent).toContain('Group Dietary Safety: Dairy');
+      expect(element.textContent).toContain('Contains Dairy — Conflict with Andrii');
+      expect(element.querySelectorAll('app-participant-card')[0].textContent)
+        .toContain('Contains Dairy — Conflict with Andrii');
     });
   });
 

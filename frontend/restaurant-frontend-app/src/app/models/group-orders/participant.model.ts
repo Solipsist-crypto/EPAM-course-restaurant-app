@@ -6,6 +6,8 @@ export interface DishShort {
   price: number;
   imageUrl?: string;
   weight?: string;
+  allergens?: string[];
+  hasConflict?: boolean;
 }
 
 export interface ParticipantItem {
@@ -20,4 +22,5 @@ export interface Participant {
   items: ParticipantItem[];
   total: number;
   isSubmitted: boolean;
+  allergies?: string[];
 }

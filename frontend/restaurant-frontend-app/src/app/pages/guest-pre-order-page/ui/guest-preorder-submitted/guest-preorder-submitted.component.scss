@@ -102,6 +102,13 @@ h3 {
     color: color.$neutral-600;
 }
 
+.allergen-warning {
+    display: block;
+    color: color.$red-400;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
 .item-price {
     color: color.$neutral-900;
     font-weight: 600;

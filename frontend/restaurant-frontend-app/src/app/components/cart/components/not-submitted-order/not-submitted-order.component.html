@@ -28,6 +28,9 @@
             <div class="details">
               <div class="dish-name">
                 <span class="body-bold">{{ item.dish.name || 'Unknown dish' }}</span>
+                  @for (allergen of conflictingAllergens(item.dish.allergens); track allergen) {
+                    <span class="allergen-warning">⚠️ Contains {{ formatAllergen(allergen) }}</span>
+                  }
                   <span class="caption">Expected ready time – 10 minutes</span>
                 </div>
 

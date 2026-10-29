@@ -26,6 +26,17 @@ resource "aws_cognito_user_pool" "backend" {
   admin_create_user_config {
     allow_admin_create_user_only = false
   }
+
+  schema {
+    attribute_data_type = "String"
+    mutable             = true
+    name                = "allergies"
+    required            = false
+
+    string_attribute_constraints {
+      max_length = "2048"
+    }
+  }
 }
 
 resource "aws_cognito_user_pool_client" "backend_api" {
@@ -35,6 +46,8 @@ resource "aws_cognito_user_pool_client" "backend_api" {
   generate_secret = false
 
   explicit_auth_flows = ["ALLOW_USER_PASSWORD_AUTH"]
+  read_attributes     = ["email", "given_name", "family_name", "custom:allergies"]
+  write_attributes    = ["email", "given_name", "family_name", "custom:allergies"]
 
   refresh_token_validity = 30
   auth_session_validity  = 3

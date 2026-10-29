@@ -23,6 +23,7 @@ export interface GuestCartItem {
     title: string;
     price: number;
     imageUrl?: string | null;
+    allergens?: string[];
     qty: number;
 }
 
@@ -36,6 +37,7 @@ export class GuestPreorderStore {
     readonly inviteError = signal<'expired' | 'retryable' | null>(null);
 
     readonly guestName = signal<string>('');
+    readonly guestAllergies = signal<string[]>([]);
     readonly status = signal<GuestPreorderStatus>('active');
     readonly cartItems = signal<GuestCartItem[]>([]);
 
@@ -81,6 +83,7 @@ export class GuestPreorderStore {
         if (this.contextId() === id) return;
 
         this.contextId.set(id);
+        this.guestAllergies.set([]);
         void this.loadInviteByToken(id);
 
         const name = localStorage.getItem(this.key(id, 'guestName'));
@@ -125,7 +128,7 @@ export class GuestPreorderStore {
         }
     }
 
-    async join(name: string) {
+    async join(name: string, allergies: string[] = []) {
         const inv = this.invite();
         if (!inv) {
             this.joinError.set('Invite is not loaded yet');
@@ -133,6 +136,7 @@ export class GuestPreorderStore {
         }
 
         this.setGuestName(name);
+        this.guestAllergies.set(allergies);
 
         const groupReservationId = inv.GroupReservationId;
         if (!groupReservationId) {
@@ -143,6 +147,7 @@ export class GuestPreorderStore {
         const payload = {
             groupReservationId,
             guestName: this.guestName(),
+            allergies: this.guestAllergies(),
         };
 
         console.log('[join payload]', payload);
@@ -210,10 +215,41 @@ export class GuestPreorderStore {
 
         try {
             const res = await firstValueFrom(this.guestSessionsService.getMenu(id, token));
-            console.log('[menu response]', res);
-            console.log('[menu dishes keys]', Object.keys(res.dishes ?? {}));
-
-            this.menuByCategory.set(res.dishes ?? {});
+            const rawMenu = res.dishes ?? res.Dishes ?? {};
+            const menu = Object.fromEntries(
+                Object.entries(rawMenu).map(([category, dishes]) => [
+                    category,
+                    dishes.map((dish) => {
+                        const state = dish.state ?? dish.State ?? '';
+                        return {
+                            id: dish.id ?? dish.Id ?? '',
+                            name: dish.name ?? dish.Name ?? '',
+                            description: dish.description ?? dish.Description ?? '',
+                            price: dish.price ?? dish.Price ?? 0,
+                            weight: dish.weight ?? dish.Weight ?? '',
+                            calories: dish.calories ?? dish.Calories ?? '',
+                            proteins: dish.proteins ?? dish.Proteins ?? '',
+                            fats: dish.fats ?? dish.Fats ?? '',
+                            carbohydrates: dish.carbohydrates ?? dish.Carbohydrates ?? '',
+                            vitamins: dish.vitamins ?? dish.Vitamins ?? '',
+                            imageUrl: dish.imageUrl ?? dish.ImageUrl ?? null,
+                            state,
+                            selectable: dish.selectable ?? dish.Selectable ?? state.toLowerCase() === 'available',
+                            allergens: dish.allergens ?? dish.Allergens ?? [],
+                        };
+                    }),
+                ]),
+            );
+            this.menuByCategory.set(menu);
+            const dishesById = new Map<string, GuestMenuDish>(
+                Object.values(menu).flat().map((dish) => [dish.id, dish]),
+            );
+            this.cartItems.update((items) => items.map((item) => ({
+                ...item,
+                allergens: item.allergens ?? dishesById.get(item.dishId)?.allergens ?? [],
+            })));
+            this.guestAllergies.set((res.allergies ?? res.Allergies ?? this.guestAllergies())
+                .map((allergy) => allergy.trim().toLowerCase()));
         } catch (e) {
             console.log('[menu error]', e);
             this.menuError.set('Failed to load menu');
@@ -316,6 +352,7 @@ export class GuestPreorderStore {
             const session = await firstValueFrom(this.guestSessionsService.createSession({
                 groupReservationId: invite.GroupReservationId,
                 guestName,
+                allergies: this.guestAllergies(),
             }));
             this.guestSessionId.set(session.SessionId);
             this.guestSessionToken.set(session.SessionToken);

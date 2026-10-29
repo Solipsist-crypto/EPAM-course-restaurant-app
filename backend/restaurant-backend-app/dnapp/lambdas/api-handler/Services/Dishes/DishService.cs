@@ -53,6 +53,10 @@ public class DishService : IDishService
         existingDish.Carbohydrates = request.Carbohydrates;
         existingDish.Vitamins = request.Vitamins;
         existingDish.State = request.State;
+        if (request.Allergens is not null)
+        {
+            existingDish.Allergens = request.Allergens;
+        }
 
         if (!string.IsNullOrWhiteSpace(newImageUrl))
         {

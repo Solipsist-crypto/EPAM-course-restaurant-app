@@ -16,6 +16,10 @@
       <button type="button" class="secondary-button" (click)="load()">Try again</button>
     </section>
   } @else {
+    <aside class="dietary-safety-banner" aria-label="Group dietary safety">
+      <strong>Group Dietary Safety:</strong> {{ groupAllergyLabels() }}
+    </aside>
+
     @if (invite(); as groupInvite) {
       <header class="group-order-header">
         <p class="address">{{ groupInvite.LocationAddress }}</p>
@@ -43,6 +47,7 @@
           <li>
             <app-participant-card
               [participant]="person"
+              [groupParticipants]="participants()"
               [isMe]="person.id === ownerSessionId()"
               [canRemove]="status() === 'Open' && person.type === 'Guest'"
               (removeClick)="requestRemoveGuest(person)"

@@ -63,6 +63,7 @@ public class GuestSessionServiceTests
         guestSession.GroupReservationId = groupReservation.GroupReservationId;
         guestSession.GuestName = "Andrii";
         guestSession.Dishes = [new OrderItem { DishId = guestDish.Id, Quantity = 2 }];
+        guestSession.Allergies = ["dairy"];
         guestSession.IsSubmitted = true;
 
         ownerSession.Id = "owner-1";
@@ -73,7 +74,9 @@ public class GuestSessionServiceTests
         ownerSession.OwnerUserId = userId;
 
         guestDish.Price = 180;
+        guestDish.Allergens = ["dairy"];
         ownerDish.Price = 220;
+        ownerDish.Allergens = ["peanuts"];
 
         _mockGroupReservationRepository
             .Setup(repository => repository.GetGroupReservationByIdAsync(groupReservation.GroupReservationId))
@@ -99,6 +102,15 @@ public class GuestSessionServiceTests
         _mockDishRepository
             .Setup(repository => repository.GetDishesByIdsAsync(It.IsAny<IEnumerable<string>>()))
             .ReturnsAsync([guestDish, ownerDish]);
+        _mockUserRepository
+            .Setup(repository => repository.GetUserByIdAsync(userId))
+            .ReturnsAsync(new UserType
+            {
+                Attributes =
+                [
+                    new AttributeType { Name = "custom:allergies", Value = "[\"peanuts\"]" }
+                ]
+            });
 
         var result = await _guestSessionService.GetGroupReservationSessionsAsync(userId, groupReservation.GroupReservationId);
 
@@ -107,9 +119,14 @@ public class GuestSessionServiceTests
         Assert.Equal(2, participants.Length);
         Assert.Equal(ParticipantType.Guest, participants[0].Type);
         Assert.Equal("Andrii", participants[0].Name);
+        Assert.Equal(["dairy"], participants[0].Allergies);
         Assert.Equal(360, participants[0].Total);
         Assert.True(participants[0].IsSubmitted);
+        Assert.True(participants[0].Items.Single().Dish.HasConflict);
+        Assert.Equal(["dairy"], participants[0].Items.Single().Dish.Allergens);
         Assert.Equal(ParticipantType.Owner, participants[1].Type);
+        Assert.Equal(["peanuts"], participants[1].Allergies);
+        Assert.True(participants[1].Items.Single().Dish.HasConflict);
         Assert.Equal(220, participants[1].Total);
 
         using var responseJson = JsonDocument.Parse(JsonSerializer.Serialize(result));

@@ -26,6 +26,7 @@ describe('SubmittedOrderComponent', () => {
         dish: {
           id: 'dish-1',
           price: 10,
+          allergens: ['eggs'],
         },
       },
       {
@@ -51,11 +52,29 @@ describe('SubmittedOrderComponent', () => {
     component = fixture.componentInstance;
 
     fixture.componentRef.setInput('order', order);
+    fixture.componentRef.setInput('allergies', ['eggs']);
     fixture.detectChanges();
   });
 
   it('should create', () => {
     expect(component).toBeTruthy();
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('⚠️ Contains Eggs');
+  });
+
+  it('only displays allergens in the user profile', () => {
+    fixture.componentRef.setInput('order', {
+      ...order,
+      orderItems: [{
+        ...order.orderItems[0],
+        dish: { ...order.orderItems[0].dish, allergens: ['eggs', 'dairy', 'gluten'] },
+      }],
+    });
+    fixture.detectChanges();
+
+    const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
+    expect(text).toContain('Contains Eggs');
+    expect(text).not.toContain('Contains Dairy');
+    expect(text).not.toContain('Contains Gluten');
   });
 
   it('should emit canceled when cancelOrder is called', () => {

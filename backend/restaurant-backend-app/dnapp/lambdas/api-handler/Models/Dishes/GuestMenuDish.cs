@@ -1,4 +1,6 @@
 ﻿using APIHandler.Constants.Dishes;
+using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace APIHandler.Models.Dishes;
 
@@ -29,4 +31,7 @@ public class GuestMenuDish
     public required DishState State { get; set; }
 
     public bool Selectable => State == DishState.Available;
+
+    [JsonPropertyName("allergens")]
+    public required IEnumerable<string> Allergens { get; set; }
 }

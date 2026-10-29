@@ -53,6 +53,16 @@ h1 {
   color: color.$neutral-600;
 }
 
+.dietary-safety-banner {
+  margin: 0 0 1rem;
+  padding: 0.875rem 1rem;
+  border: 1px solid color.$orange-100;
+  border-radius: 0.625rem;
+  background: color.$orange-30;
+  color: color.$neutral-900;
+  line-height: 1.5;
+}
+
 .schedule,
 .guest-count {
   color: color.$neutral-600;

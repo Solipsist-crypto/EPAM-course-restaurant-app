@@ -13,5 +13,7 @@ export interface DishListResponse {
   fats: string;
   vitamins: string;
   dietaryTags?: string[];
+  allergens?: string[];
+  hasConflict?: boolean;
   status?: 'Confirmed' | 'Rejected' | 'Pending';
 }

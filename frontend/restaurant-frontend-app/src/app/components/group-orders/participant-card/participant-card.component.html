@@ -31,6 +31,15 @@
           <p class="name">{{ item.dish.name || 'Unknown dish' }}</p>
           <p class="qty">× {{ item.quantity }}</p>
           <p class="price">{{ item.dish.price * item.quantity | currency }}</p>
+          @if (dietaryConflicts(item.dish.allergens).length) {
+            <div class="conflict-badges">
+              @for (conflict of dietaryConflicts(item.dish.allergens); track conflict.allergen + conflict.participantName) {
+                <span class="conflict-badge">
+                  Contains {{ formatAllergen(conflict.allergen) }} — Conflict with {{ conflict.participantName }}
+                </span>
+              }
+            </div>
+          }
         </li>
       }
     </ul>

@@ -59,6 +59,7 @@ DISHES = [
         "carbohydrates": "36 g",
         "vitamins": "Vitamin C, Vitamin K",
         "imageUrl": "https://images.unsplash.com/photo-1572695157366-5e585ab2b69f",
+        "allergens": ["gluten"],
     },
     {
         "id": "seed-dish-kyiv-soup",
@@ -74,6 +75,7 @@ DISHES = [
         "carbohydrates": "31 g",
         "vitamins": "Vitamin A, Vitamin E",
         "imageUrl": "https://images.unsplash.com/photo-1476718406336-bb5a9690ee2a",
+        "allergens": ["dairy"],
     },
     {
         "id": "seed-dish-kyiv-salmon",
@@ -89,6 +91,7 @@ DISHES = [
         "carbohydrates": "24 g",
         "vitamins": "Vitamin D, Vitamin B12",
         "imageUrl": "https://images.unsplash.com/photo-1467003909585-2f8a72700288",
+        "allergens": ["seafood"],
     },
     {
         "id": "seed-dish-kyiv-cheesecake",
@@ -104,6 +107,7 @@ DISHES = [
         "carbohydrates": "39 g",
         "vitamins": "Vitamin C",
         "imageUrl": "https://images.unsplash.com/photo-1533134242443-d4fd215305ad",
+        "allergens": ["dairy", "gluten", "eggs", "berries"],
     },
     {
         "id": "seed-dish-tbilisi-pkhali",
@@ -119,6 +123,7 @@ DISHES = [
         "carbohydrates": "27 g",
         "vitamins": "Vitamin A, Vitamin E",
         "imageUrl": "https://images.unsplash.com/photo-1547592180-85f173990554",
+        "allergens": ["nuts"],
     },
     {
         "id": "seed-dish-tbilisi-khinkali",
@@ -134,6 +139,7 @@ DISHES = [
         "carbohydrates": "68 g",
         "vitamins": "Vitamin B12, Iron",
         "imageUrl": "https://images.unsplash.com/photo-1563245372-f21724e3856d",
+        "allergens": ["gluten", "eggs"],
     },
     {
         "id": "seed-dish-tbilisi-kharcho",
@@ -149,6 +155,7 @@ DISHES = [
         "carbohydrates": "48 g",
         "vitamins": "Vitamin B6, Iron",
         "imageUrl": "https://images.unsplash.com/photo-1547592180-85f173990554",
+        "allergens": [],
     },
     {
         "id": "seed-dish-tbilisi-churchkhela",
@@ -164,6 +171,7 @@ DISHES = [
         "carbohydrates": "47 g",
         "vitamins": "Vitamin E",
         "imageUrl": "https://images.unsplash.com/photo-1519869325930-281384150729",
+        "allergens": ["nuts"],
     },
     {
         "id": "seed-dish-odesa-salad",
@@ -179,6 +187,23 @@ DISHES = [
         "carbohydrates": "23 g",
         "vitamins": "Vitamin C, Vitamin K",
         "imageUrl": "https://images.unsplash.com/photo-1512621776951-a57141f2eefd",
+        "allergens": [],
+    },
+    {
+        "id": "seed-dish-odesa-caesar-salad",
+        "locationId": "seed-location-odesa",
+        "name": "Caesar Salad",
+        "description": "Crisp romaine lettuce with parmesan, croutons, and classic Caesar dressing.",
+        "dishType": 0,
+        "price": Decimal("12.00"),
+        "weight": "280 g",
+        "calories": "360 kcal",
+        "proteins": "16 g",
+        "fats": "22 g",
+        "carbohydrates": "28 g",
+        "vitamins": "Vitamin A, Vitamin K",
+        "imageUrl": "https://images.unsplash.com/photo-1550304943-4f24f54ddde9",
+        "allergens": ["dairy", "gluten"],
     },
     {
         "id": "seed-dish-odesa-fish",
@@ -194,6 +219,7 @@ DISHES = [
         "carbohydrates": "34 g",
         "vitamins": "Vitamin D, Selenium",
         "imageUrl": "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2",
+        "allergens": ["seafood"],
     },
     {
         "id": "seed-dish-odesa-honey-cake",
@@ -209,6 +235,7 @@ DISHES = [
         "carbohydrates": "58 g",
         "vitamins": "Calcium",
         "imageUrl": "https://images.unsplash.com/photo-1578985545062-69928b1d9587",
+        "allergens": ["dairy", "gluten", "eggs"],
     },
 ]
 
@@ -227,6 +254,7 @@ DRINKS = [
         "carbohydrates": "24 g",
         "vitamins": "Vitamin C",
         "imageUrl": "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?auto=format&fit=crop&w=800&q=80",
+        "allergens": [],
     },
     {
         "id": "seed-dish-tbilisi-tarragon",
@@ -242,6 +270,7 @@ DRINKS = [
         "carbohydrates": "27 g",
         "vitamins": "Vitamin C",
         "imageUrl": "https://images.unsplash.com/photo-1551024709-8f23befc6f87?auto=format&fit=crop&w=800&q=80",
+        "allergens": [],
     },
     {
         "id": "seed-dish-odesa-compote",
@@ -257,6 +286,7 @@ DRINKS = [
         "carbohydrates": "31 g",
         "vitamins": "Vitamin C",
         "imageUrl": "https://images.unsplash.com/photo-1556679343-c7306c1976bc?auto=format&fit=crop&w=800&q=80",
+        "allergens": ["berries"],
     },
 ]
 
@@ -370,10 +400,12 @@ def resolve_waiters(
 
         existing = waiters_table.get_item(Key={"userId": user_id}, ConsistentRead=True).get("Item")
         if existing and existing.get("locationId") != location_id:
-            raise ValueError(
-                f"The Cognito user configured by {environment_name} is already assigned to "
-                f"{existing.get('locationId')!r}; refusing to move a waiter with possible active reservations."
+            print(
+                f"WARNING: The Cognito user configured by {environment_name} is already assigned to "
+                f"{existing.get('locationId')!r}; skipping waiter assignment for {location_id}.",
+                file=sys.stderr,
             )
+            continue
 
         waiter_record = dict(existing or {})
         waiter_record.update(

@@ -9,6 +9,7 @@ import {
 
 import { Order } from '@app/models/orders/order.model';
 import { ReservationStatus } from '@app/models/reservations/reservation.model';
+import { formatAllergen, matchingAllergens } from '@app/shared/helpers/group-dietary-safety';
 
 @Component({
   selector: 'app-not-submitted-order',
@@ -20,6 +21,7 @@ import { ReservationStatus } from '@app/models/reservations/reservation.model';
 })
 export class NotSubmittedOrderComponent {
   readonly order = input.required<Order>();
+  readonly allergies = input<string[]>([]);
   readonly failedImages = new Set<string>();
 
   readonly canModify = computed(
@@ -43,6 +45,14 @@ export class NotSubmittedOrderComponent {
 
   onDishImageError(itemId: string): void {
     this.failedImages.add(itemId);
+  }
+
+  formatAllergen(allergen: string): string {
+    return formatAllergen(allergen);
+  }
+
+  conflictingAllergens(allergens: string[] = []): string[] {
+    return matchingAllergens(this.allergies(), allergens);
   }
 
   incrementItemQuantity(itemId: string): void {

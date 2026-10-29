@@ -1,4 +1,5 @@
 ﻿using Amazon.DynamoDBv2.DataModel;
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace APIHandler.Models.Dishes;
@@ -43,4 +44,7 @@ public class DishListResponse
 
     [JsonPropertyName("vitamins")]
     public required string Vitamins { get; set; }
+
+    [JsonPropertyName("allergens")]
+    public required IEnumerable<string> Allergens { get; set; }
 }

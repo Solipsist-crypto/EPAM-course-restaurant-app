@@ -1,5 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import {Component, OnInit, ChangeDetectionStrategy, inject} from '@angular/core';
+import {Component, OnInit, ChangeDetectionStrategy, computed, inject} from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { AuthenticationService } from '@app/auth/services/authentication.service';
 import { DishCardComponent } from '@app/shared/custom-components/dish-card/dish-card.component';
 import { DishesService } from '@app/services/dishes/dishes.service';
 import { DishListResponse } from '@app/models/dishes/dish-list-response.model';
@@ -12,6 +14,7 @@ import { DishModalComponent } from '@app/components/dish-modal/dish-modal.compon
 import { PreOrdersService } from '@app/services/pre-orders/pre-orders.service';
 import {ToastService} from '@app/services/toast/toast.service';
 import { ReservationService } from '@app/services/reservation/reservation.service';
+import { formatAllergen, matchingAllergens } from '@app/shared/helpers/group-dietary-safety';
 
 @Component({
   selector: 'app-menu-page',
@@ -52,6 +55,11 @@ export class MenuPageComponent implements OnInit {
   private readonly router = inject(Router);
   private  readonly orderService = inject(PreOrdersService);
   private readonly reservationService = inject(ReservationService);
+  private readonly authenticationService = inject(AuthenticationService);
+  readonly currentUser = toSignal(this.authenticationService.user$, {
+    initialValue: this.authenticationService.getUser(),
+  });
+  readonly profileAllergies = computed(() => this.currentUser()?.allergies ?? []);
 
   ngOnInit(): void {
     this.route.queryParams.subscribe((params) => {
@@ -201,6 +209,14 @@ export class MenuPageComponent implements OnInit {
       return;
     }
 
+    const conflicts = matchingAllergens(this.profileAllergies(), dish.allergens ?? []);
+    if (
+      conflicts.length &&
+      !window.confirm(`⚠️ Contains ${conflicts.map(formatAllergen).join(', ')}. Add this dish anyway?`)
+    ) {
+      return;
+    }
+
     this.orderService
       .addDishToPreOrderByReservationId(reservationId, dish, 1)
       .subscribe({
@@ -213,6 +229,14 @@ export class MenuPageComponent implements OnInit {
           }
         },
       });
+  }
+
+  conflictingAllergens(dish: DishListResponse): string[] {
+    return matchingAllergens(this.profileAllergies(), dish.allergens ?? []);
+  }
+
+  formatAllergen(allergen: string): string {
+    return formatAllergen(allergen);
   }
 
   private getApiErrorMessage(

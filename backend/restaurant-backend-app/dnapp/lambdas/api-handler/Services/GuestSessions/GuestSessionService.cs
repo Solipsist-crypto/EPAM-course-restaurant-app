@@ -4,6 +4,7 @@ using APIHandler.Constants.Dishes;
 using APIHandler.Constants.Orders;
 using APIHandler.Entities;
 using APIHandler.Exceptions;
+using APIHandler.Helpers;
 using APIHandler.Mappers;
 using APIHandler.Models.GuestSessions;
 using APIHandler.Models.Orders;
@@ -71,6 +72,7 @@ public class GuestSessionService(
             GroupReservationId = group.GroupReservationId,
             SessionTokenHash = Convert.ToBase64String(SHA256.HashData(tokenBytes)),
             Dishes = [],
+            Allergies = AllergyHelper.Normalize(request.Allergies),
         };
 
         await guestSessionRepository.SaveAsync(session);
@@ -92,7 +94,7 @@ public class GuestSessionService(
             .GroupBy(d => d.DishType)
             .ToDictionary(k => k.Key, GuestMenuDishMapper.Map);
 
-        return new GuestMenuResponse(dishesMapped);
+        return new GuestMenuResponse(dishesMapped, session.Allergies);
     }
 
     public async Task AddDishAsync(string guestSessionId, string dishId, int quantity)
@@ -243,12 +245,23 @@ public class GuestSessionService(
 
         foreach (var guestSession in sessions)
         {
+            IEnumerable<string> participantAllergies = guestSession.Allergies ?? [];
+            if (guestSession.IsOwnerSession && !string.IsNullOrWhiteSpace(guestSession.OwnerUserId))
+            {
+                var user = await userRepository.GetUserByIdAsync(guestSession.OwnerUserId);
+                participantAllergies = AllergyHelper.Parse(
+                    user?.Attributes.FirstOrDefault(attribute => attribute.Name == "custom:allergies")?.Value);
+            }
+
+            var normalizedAllergies = AllergyHelper.Normalize(participantAllergies);
             var sourceDishes = guestSession.IsOwnerSession && ownerOrderHasDishes
                 ? ownerOrder!.Dishes
                 : guestSession.Dishes;
             var items = sourceDishes.Select(d => new OrderItemResponse
             {
-                Dish = DishMapper.ToDishResponse(dishesById[d.DishId]),
+                Dish = DishMapper.ToDishResponse(
+                    dishesById[d.DishId],
+                    AllergyHelper.HasConflict(normalizedAllergies, dishesById[d.DishId].Allergens)),
                 Quantity = d.Quantity,
                 State = d.State
             }).ToArray();
@@ -258,7 +271,14 @@ public class GuestSessionService(
             var isSubmitted = guestSession.IsOwnerSession && ownerOrderHasDishes
                 ? ownerOrder!.Status is OrderStatus.Submitted or OrderStatus.SubmittedByCustomer
                 : guestSession.IsSubmitted;
-            var participant = new Participant(guestSession.Id, participantType, guestSession.GuestName, items, total, isSubmitted);
+            var participant = new Participant(
+                guestSession.Id,
+                participantType,
+                guestSession.GuestName,
+                items,
+                total,
+                isSubmitted,
+                normalizedAllergies);
             participants.Add(participant);
         }
 

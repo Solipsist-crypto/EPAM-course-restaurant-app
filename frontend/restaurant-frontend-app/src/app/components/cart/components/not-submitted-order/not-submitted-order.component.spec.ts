@@ -25,6 +25,7 @@ describe('NotSubmittedOrderComponent', () => {
         dish: {
           id: 'dish-1',
           price: 10,
+          allergens: ['peanuts'],
         },
       },
     ],
@@ -42,11 +43,29 @@ describe('NotSubmittedOrderComponent', () => {
     component = fixture.componentInstance;
 
     fixture.componentRef.setInput('order', order);
+    fixture.componentRef.setInput('allergies', ['peanuts']);
     fixture.detectChanges();
   });
 
   it('should create', () => {
     expect(component).toBeTruthy();
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('⚠️ Contains Peanuts');
+  });
+
+  it('only displays allergens in the user profile', () => {
+    fixture.componentRef.setInput('order', {
+      ...order,
+      orderItems: [{
+        ...order.orderItems[0],
+        dish: { ...order.orderItems[0].dish, allergens: ['peanuts', 'dairy', 'eggs'] },
+      }],
+    });
+    fixture.detectChanges();
+
+    const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
+    expect(text).toContain('Contains Peanuts');
+    expect(text).not.toContain('Contains Dairy');
+    expect(text).not.toContain('Contains Eggs');
   });
 
   it('should emit submitted with the order ID', () => {

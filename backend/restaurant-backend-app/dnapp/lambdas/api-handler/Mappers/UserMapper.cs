@@ -1,4 +1,5 @@
 using Amazon.CognitoIdentityProvider.Model;
+using APIHandler.Helpers;
 using APIHandler.Models.Users;
 using System.Linq;
 
@@ -15,7 +16,8 @@ public static class UserMapper
             FirstName = user.Attributes.FirstOrDefault(a => a.Name == "given_name")?.Value ?? "Unknown",
             LastName = user.Attributes.FirstOrDefault(a => a.Name == "family_name")?.Value ?? "User",
             Email = user.Attributes.FirstOrDefault(a => a.Name == "email")?.Value ?? "no_email",
-            Role = Roles.Customer.ToString()
+            Role = Roles.Customer.ToString(),
+            Allergies = AllergyHelper.Parse(user.Attributes.FirstOrDefault(a => a.Name == "custom:allergies")?.Value)
         };
     }
 }

@@ -89,6 +89,22 @@
         }
       </div>
 
+      <fieldset class="allergies-section">
+        <legend class="block-title">Allergies</legend>
+        <div class="allergy-options">
+          @for (allergy of allergyOptions; track allergy.value) {
+            <label class="allergy-option">
+              <input
+                type="checkbox"
+                [checked]="userForm.controls.allergies.value.includes(allergy.value)"
+                (change)="toggleAllergy(allergy.value, $event)"
+              />
+              <span>{{ allergy.label }}</span>
+            </label>
+          }
+        </div>
+      </fieldset>
+
       <button
         type="submit"
         class="button button--primary button--large save-button"

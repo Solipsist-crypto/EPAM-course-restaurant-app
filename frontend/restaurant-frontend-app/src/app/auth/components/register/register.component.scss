@@ -106,6 +106,44 @@ label {
   height: 3.5rem;
 }
 
+.allergies {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+
+  legend {
+    margin-bottom: 0.5rem;
+    color: color.$neutral-900;
+    font-size: 0.875rem;
+    line-height: 1.5rem;
+  }
+}
+
+.allergy-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem 1rem;
+}
+
+.allergy-option {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+  height: auto;
+  margin: 0;
+  cursor: pointer;
+
+  input {
+    width: 1rem;
+    height: 1rem;
+    margin: 0;
+    padding: 0;
+    accent-color: color.$green-600;
+  }
+}
+
 input {
   height: 3.5rem;
   border-radius: 1rem;

@@ -27,7 +27,7 @@ Run the homework test suite from the frontend directory:
 npm run test:hw
 ```
 
-All **67 homework tests pass**.
+All **70 homework tests pass**.
 
 ### Backend
 
@@ -42,6 +42,16 @@ The backend is deployed to AWS and is not started as a local web server. To buil
 - **Bonus — Remove Guest:** The owner can remove a guest from the group order after confirmation; the backend enforces owner permissions and validates session membership.
 
 Owner and protected API operations use Cognito JWT authorization. The backend uses DynamoDB for reservations, group reservations, guest sessions, and orders.
+
+## Group Dietary Safety (Allergies)
+
+Users can choose allergies during registration and update them in their profile. User allergies are stored in the Cognito `custom:allergies` attribute. Anonymous guests can provide allergies when joining a group pre-order; their allergy lists are stored with guest sessions in DynamoDB.
+
+The menu warns about allergens that match the current user's profile or guest session. Cart warnings show only those matching allergens and remain visible after submission. On the group pre-order page, the **Group Dietary Safety** banner summarizes reported allergies, and dish badges identify conflicts with the affected participant by name.
+
+The feature was verified with **70 homework tests**, **87 targeted frontend tests**, and **160 backend tests** passing.
+
+**Live website:** [https://d156bsfqw0ujop.cloudfront.net](https://d156bsfqw0ujop.cloudfront.net)
 
 ## Deployment Guide
 

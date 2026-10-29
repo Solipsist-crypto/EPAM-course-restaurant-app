@@ -13,13 +13,14 @@ import {
   output,
   signal,
 } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 
 import { Order } from '@app/models/orders/order.model';
 import { PreOrdersService } from '@app/services/pre-orders/pre-orders.service';
 import { ReservationService } from '@app/services/reservation/reservation.service';
 import { ReservationStatus } from '@app/models/reservations/reservation.model';
+import { AuthenticationService } from '@app/auth/services/authentication.service';
 
 import { CancelOrderModalComponent } from './components/cancel-order-modal/cancel-order-modal.component';
 import { NotSubmittedOrderComponent } from './components/not-submitted-order/not-submitted-order.component';
@@ -48,6 +49,10 @@ export class CartComponent implements OnInit {
 
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly authentication = inject(AuthenticationService);
+  readonly currentUser = toSignal(this.authentication.user$, {
+    initialValue: this.authentication.getUser(),
+  });
 
   readonly closeCartEvent = output<void>();
 

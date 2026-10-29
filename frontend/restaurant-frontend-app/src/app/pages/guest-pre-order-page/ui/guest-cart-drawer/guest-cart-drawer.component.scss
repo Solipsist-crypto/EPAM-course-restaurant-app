@@ -94,6 +94,13 @@
   overflow-wrap: anywhere;
 }
 
+.allergen-warning {
+  margin-top: 4px;
+  color: color.$red-400;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
 .sub {
   margin-top: 4px;
   color: color.$neutral-600;

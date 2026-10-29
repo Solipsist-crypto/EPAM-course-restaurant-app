@@ -54,3 +54,11 @@
   letter-spacing: 0;
   vertical-align: middle;
 }
+
+.allergen-warning {
+  display: block;
+  color: color.$red-400;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.2;
+}

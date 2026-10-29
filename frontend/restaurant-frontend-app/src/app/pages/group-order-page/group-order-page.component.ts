@@ -11,6 +11,7 @@ import { Participant } from '@app/models/group-orders/participant.model';
 import { GuestInvite } from '@app/models/reservations/guest-invite.model';
 import { GroupReservationStatus } from '@app/models/group-orders/group-status.model';
 import { consolidatePreOrder } from '@app/shared/helpers/consolidate-pre-order';
+import { formatAllergen } from '@app/shared/helpers/group-dietary-safety';
 
 @Component({
   selector: 'app-group-order-page',
@@ -42,6 +43,14 @@ export class GroupOrderPageComponent implements OnInit {
   readonly lastUpdatedAt = signal<Date | null>(null);
   readonly refreshFailed = signal(false);
   readonly consolidatedOrder = computed(() => consolidatePreOrder(this.participants()));
+  readonly groupAllergies = computed(() => [
+    ...new Set(this.participants().flatMap((participant) => participant.allergies ?? [])),
+  ]);
+  readonly groupAllergyLabels = computed(() =>
+    this.groupAllergies().length
+      ? this.groupAllergies().map(formatAllergen).join(', ')
+      : 'None reported',
+  );
   readonly pendingParticipantsCount = computed(
     () => this.participants().filter((participant) => !participant.isSubmitted).length,
   );

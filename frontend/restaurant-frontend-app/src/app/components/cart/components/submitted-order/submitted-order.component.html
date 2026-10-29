@@ -9,8 +9,11 @@
     <div class="order-item">
       <span class="body">
     {{ item.quantity }}× {{ item.dish.name }}
+      @for (allergen of conflictingAllergens(item.dish.allergens); track allergen) {
+        <span class="allergen-warning">⚠️ Contains {{ formatAllergen(allergen) }}</span>
+      }
 
-    @if (item.state !== undefined && item.state !== null) {
+      @if (item.state !== undefined && item.state !== null) {
       @switch (item.state) {
       @case (0) {
       <span class="body status-pending">

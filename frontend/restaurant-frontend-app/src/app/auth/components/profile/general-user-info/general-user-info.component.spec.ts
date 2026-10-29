@@ -210,6 +210,7 @@ describe('GeneralInformationComponent', () => {
     expect(component.userForm.getRawValue()).toEqual({
       firstName: 'Alice',
       lastName: 'Smith',
+      allergies: [],
     });
   });
 
@@ -231,6 +232,7 @@ describe('GeneralInformationComponent', () => {
     component.userForm.setValue({
       firstName: 'Mary-Jane',
       lastName: "O'Neil",
+      allergies: [],
     });
 
     expect(component.userForm.valid).toBeTrue();
@@ -282,6 +284,7 @@ describe('GeneralInformationComponent', () => {
     component.userForm.setValue({
       firstName: 'Alicia',
       lastName: 'Jones',
+      allergies: [],
     });
 
     component.onSave();
@@ -297,6 +300,18 @@ describe('GeneralInformationComponent', () => {
     );
 
     expect(component.isSaving()).toBeFalse();
+  });
+
+  it('saves selected allergies with the profile', () => {
+    component.userForm.controls.allergies.setValue(['peanuts', 'dairy']);
+
+    component.onSave();
+
+    expect(auth.editProfile).toHaveBeenCalledOnceWith(
+      'Alice',
+      'Smith',
+      ['peanuts', 'dairy'],
+    );
   });
 
   it('shows an error when saving names fails', () => {
