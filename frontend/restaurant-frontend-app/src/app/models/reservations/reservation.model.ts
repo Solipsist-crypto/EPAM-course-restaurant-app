@@ -10,6 +10,7 @@ export interface Reservation {
   guestCount: number;
   status: ReservationStatus;
   locationAddress: string;
+  locationId?: string;
   tableCapacity: number;
   restaurantName?: string;
   waiterId: string;
@@ -35,6 +36,7 @@ export interface ReservationCustomer {
   status: ReservationStatusCustomer;
   restaurantName: string;
   locationAddress: string;
+  locationId?: string;
   feedback?: FeedbackReservationResponseItem;
   tableName?: string;
   customerId?: string;
@@ -42,6 +44,7 @@ export interface ReservationCustomer {
   hasSubmittedPreOrder?: boolean;
   preOrder?: Order;
   preOrders?: Order[];
+  guestInviteLinkAvailable?: boolean;
   createdByName?: string;
   createdByRole?: 'Customer' | 'Waiter';
 }

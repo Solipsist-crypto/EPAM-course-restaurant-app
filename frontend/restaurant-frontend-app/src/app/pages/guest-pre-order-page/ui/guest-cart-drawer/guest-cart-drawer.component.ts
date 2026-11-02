@@ -23,4 +23,9 @@ export class GuestCartDrawerComponent {
     readonly dec = output<string>();
     readonly remove = output<string>();
     readonly submitted = output<void>();
+    readonly failedImages = new Set<string>();
+
+    onDishImageError(dishId: string): void {
+        this.failedImages.add(dishId);
+    }
 }

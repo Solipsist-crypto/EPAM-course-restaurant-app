@@ -8,6 +8,7 @@ import {
 } from '@angular/core';
 
 import { Order } from '@app/models/orders/order.model';
+import { ReservationStatus } from '@app/models/reservations/reservation.model';
 
 @Component({
   selector: 'app-submitted-order',
@@ -19,6 +20,10 @@ import { Order } from '@app/models/orders/order.model';
 })
 export class SubmittedOrderComponent {
   readonly order = input.required<Order>();
+
+  readonly canModify = computed(
+    () => this.order().reservationStatus === ReservationStatus.Reserved,
+  );
 
   readonly canceled = output<void>();
   readonly edited = output<void>();
@@ -34,10 +39,14 @@ export class SubmittedOrderComponent {
   );
 
   cancelOrder(): void {
-    this.canceled.emit();
+    if (this.canModify()) {
+      this.canceled.emit();
+    }
   }
 
   editOrder(): void {
-    this.edited.emit();
+    if (this.canModify()) {
+      this.edited.emit();
+    }
   }
 }

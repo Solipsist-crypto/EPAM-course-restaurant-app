@@ -23,7 +23,7 @@ public static class ReservationMapper
     };
 
 
-    public static ReservationResponse ToReservationResponse(Reservation reservation, string address, Order? order = null, string restaurantName = "Green & Tasty", bool guestInviteLinkAvailable = false)
+    public static ReservationResponse ToReservationResponse(Reservation reservation, string address, Order? order = null, string restaurantName = "Green & Tasty", bool guestInviteLinkAvailable = false, string? locationId = null)
     => new()
     {
         Id = reservation.Id,
@@ -34,6 +34,7 @@ public static class ReservationMapper
         Status = reservation.Status,
         WaiterId = reservation.WaiterId,
         Address = address,
+        LocationId = locationId,
         RestaurantName = restaurantName,
         CustomerId = reservation.CustomerId, // for waiter dashboard
         HasSubmittedPreOrder = order is not null && order.Status == OrderStatus.Submitted,

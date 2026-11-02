@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { API_BASE_URL } from '@app/shared/config/api-base-url.token';
 import { Order } from '@app/models/orders/order.model';
 import { DishListResponse } from '@app/models/dishes/dish-list-response.model';
-import { map, switchMap } from 'rxjs';
+import { map, switchMap, throwError } from 'rxjs';
 import { CreateOrderRequest } from '@app/models/cart/create-order-request.model';
 
 @Injectable({
@@ -26,6 +26,16 @@ export class PreOrdersService {
     dish: DishListResponse,
     quantity: number
   ) {
+    if (!reservationId.trim()) {
+      return throwError(() => new Error('A reservation ID is required to add a dish.'));
+    }
+    if (!dish.id?.trim()) {
+      return throwError(() => new Error('A dish ID is required to add a dish.'));
+    }
+    if (!Number.isInteger(quantity) || quantity <= 0) {
+      return throwError(() => new Error('Dish quantity must be a positive whole number.'));
+    }
+
     return this.getPreOrders().pipe(
       map((orders) => {
         const order = orders.find((o) => o.reservationId === reservationId);
@@ -33,13 +43,18 @@ export class PreOrdersService {
           return order;
         }
 
-        const existingItem = order.orderItems.find((item) => item.dish.id === dish.id);
-        if (existingItem) {
-          existingItem.quantity += quantity;
-        } else {
-          order.orderItems.push({ dish, quantity, state: 0 });
-        }
-        return order;
+        const existingItem = order.orderItems.find(
+          (item) => item.dish.id === dish.id,
+        );
+        const orderItems = existingItem
+          ? order.orderItems.map((item) =>
+              item.dish.id === dish.id
+                ? { ...item, quantity: item.quantity + quantity }
+                : item,
+            )
+          : [...order.orderItems, { dish, quantity, state: 0 }];
+
+        return { ...order, orderItems };
       }),
       switchMap((order) => {
         if (!order) {

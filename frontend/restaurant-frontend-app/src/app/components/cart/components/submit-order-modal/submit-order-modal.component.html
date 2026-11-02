@@ -59,7 +59,16 @@
     <div class="actions">
       <button
         type="button"
+        class="button button--tertiary button--large"
+        (click)="closeModal()"
+      >
+        Close
+      </button>
+
+      <button
+        type="button"
         class="button button--secondary button--large"
+        [disabled]="!canModify()"
         (click)="cancelOrder()"
       >
         Cancel Pre-order
@@ -68,6 +77,7 @@
       <button
         type="button"
         class="button button--primary button--large"
+        [disabled]="!canModify()"
         (click)="editOrder()"
       >
         Edit Pre-order

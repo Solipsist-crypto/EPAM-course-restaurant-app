@@ -22,7 +22,7 @@ export interface GuestCartItem {
     dishId: string;
     title: string;
     price: number;
-    imageUrl?: string;
+    imageUrl?: string | null;
     qty: number;
 }
 

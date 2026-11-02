@@ -4,6 +4,7 @@ import {
 } from '@angular/core/testing';
 
 import { Order } from '@app/models/orders/order.model';
+import { ReservationStatus } from '@app/models/reservations/reservation.model';
 
 import { SubmittedOrderComponent } from './submitted-order.component';
 
@@ -17,6 +18,7 @@ describe('SubmittedOrderComponent', () => {
     reservationId: 'res-1',
     reservationAddress: 'Test Address',
     reservationTime: '2026-09-08T12:15:00Z',
+    reservationStatus: ReservationStatus.Reserved,
     orderItems: [
       {
         quantity: 2,
@@ -74,5 +76,37 @@ describe('SubmittedOrderComponent', () => {
 
   it('should exclude rejected items from total price', () => {
     expect(component.totalPrice()).toBe(20);
+  });
+
+  it('should disable edit and cancel when the reservation is cancelled', () => {
+    fixture.componentRef.setInput('order', {
+      ...order,
+      reservationStatus: ReservationStatus.Cancelled,
+    });
+    fixture.detectChanges();
+
+    const buttons = fixture.nativeElement.querySelectorAll(
+      '.actions button',
+    ) as NodeListOf<HTMLButtonElement>;
+
+    expect(buttons.length).toBe(2);
+    expect(buttons[0].disabled).toBeTrue();
+    expect(buttons[1].disabled).toBeTrue();
+  });
+
+  it('should ignore edit and cancel actions for a cancelled reservation', () => {
+    fixture.componentRef.setInput('order', {
+      ...order,
+      reservationStatus: ReservationStatus.Cancelled,
+    });
+    fixture.detectChanges();
+    spyOn(component.canceled, 'emit');
+    spyOn(component.edited, 'emit');
+
+    component.cancelOrder();
+    component.editOrder();
+
+    expect(component.canceled.emit).not.toHaveBeenCalled();
+    expect(component.edited.emit).not.toHaveBeenCalled();
   });
 });

@@ -76,6 +76,15 @@
   object-fit: cover;
 }
 
+.img-fallback {
+  display: grid;
+  place-items: center;
+  background: color.$green-100;
+  color: color.$green-800;
+  font-size: 1.25rem;
+  font-weight: 500;
+}
+
 .info {
   min-width: 0;
 }

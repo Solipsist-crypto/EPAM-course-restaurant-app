@@ -10,30 +10,32 @@
       <span class="body">
     {{ item.quantity }}× {{ item.dish.name }}
 
-    @switch (item.state) {
-    @case (0) {
-    <span class="body status-pending">
-      (Pending)
-    </span>
-    }
+    @if (item.state !== undefined && item.state !== null) {
+      @switch (item.state) {
+      @case (0) {
+      <span class="body status-pending">
+        (Pending)
+      </span>
+      }
 
-    @case (1) {
-    <span class="body status-confirmed">
-      (Confirmed)
-    </span>
-    }
+      @case (1) {
+      <span class="body status-confirmed">
+        (Confirmed)
+      </span>
+      }
 
-    @case (2) {
-    <span class="body status-rejected">
-      (Rejected)
-    </span>
-    }
+      @case (2) {
+      <span class="body status-rejected">
+        (Rejected)
+      </span>
+      }
 
-    @default {
-    <span class="body status-unknown">
-      (Unknown)
-    </span>
-    }
+      @default {
+      <span class="body status-unknown">
+        (Unknown)
+      </span>
+      }
+      }
     }
     </span>
 
@@ -53,6 +55,7 @@
     <button
       type="button"
       class="button button--secondary button--large"
+      [disabled]="!canModify()"
       (click)="cancelOrder()"
     >
       Cancel Pre-order
@@ -61,6 +64,7 @@
     <button
       type="button"
       class="button button--primary button--large"
+      [disabled]="!canModify()"
       (click)="editOrder()"
     >
       Edit Pre-order

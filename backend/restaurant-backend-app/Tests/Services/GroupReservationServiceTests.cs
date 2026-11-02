@@ -266,6 +266,7 @@ public class GroupReservationServiceTests
         groupReservation.ReservationId = reservation.Id;
         groupReservation.Status = GroupReservationStatus.Open;
         reservation.TableId = table.Id;
+        reservation.GuestCount = 2;
         table.LocationId = location.Id;
 
         _groupReservationRepositoryMock
@@ -278,7 +279,7 @@ public class GroupReservationServiceTests
 
         _guestSessionRepositoryMock
             .Setup(r => r.CountByGroupReservationId(groupReservation.GroupReservationId))
-            .ReturnsAsync(0);
+            .ReturnsAsync(1);
 
         _tableRepositoryMock
             .Setup(r => r.GetTableAsync(table.Id))

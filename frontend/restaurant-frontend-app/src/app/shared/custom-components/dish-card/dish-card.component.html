@@ -11,10 +11,21 @@
     @if (isUnavailable()) {
       <div class="status-badge">{{ dishStateLabel() }}</div>
     }
-    <img [src]="dish().imageUrl" alt="{{ dish().name }}" class="dish-image" />
+    @if (dish().imageUrl && failedImageUrl() !== dish().imageUrl) {
+      <img [src]="dish().imageUrl" alt="{{ dish().name }}" class="dish-image" (error)="onImageError()" />
+    } @else {
+      <span class="dish-image dish-image-fallback" aria-hidden="true">{{ dish().name?.charAt(0) || '?' }}</span>
+    }
     <div class="dish-info">
+      @if (dish().dietaryTags?.length) {
+        <div class="dietary-badges" aria-label="Dietary information">
+          @for (tag of dish().dietaryTags; track tag) {
+            <span class="dietary-badge">{{ tag }}</span>
+          }
+        </div>
+      }
       <div class="dish-heading">
-        <div class="dish-name">{{ dish().name }}</div>
+        <div class="dish-name">{{ dish().name || 'Unknown dish' }}</div>
         <div class="dish-meta">
           <span class="dish-price">{{ dish().price | currency: '$' }}</span>
           <span class="dish-weight">{{ dish().weight }}</span>
@@ -28,4 +39,3 @@
     </div>
     <ng-content select="[dish-footer]"></ng-content>
   </div>
-

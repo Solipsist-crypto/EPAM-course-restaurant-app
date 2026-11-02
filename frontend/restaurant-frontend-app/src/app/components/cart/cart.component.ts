@@ -1,4 +1,9 @@
 import {
+  catchError,
+  forkJoin,
+  of,
+} from 'rxjs';
+import {
   ChangeDetectionStrategy,
   Component,
   DestroyRef,
@@ -13,6 +18,8 @@ import { Router } from '@angular/router';
 
 import { Order } from '@app/models/orders/order.model';
 import { PreOrdersService } from '@app/services/pre-orders/pre-orders.service';
+import { ReservationService } from '@app/services/reservation/reservation.service';
+import { ReservationStatus } from '@app/models/reservations/reservation.model';
 
 import { CancelOrderModalComponent } from './components/cancel-order-modal/cancel-order-modal.component';
 import { NotSubmittedOrderComponent } from './components/not-submitted-order/not-submitted-order.component';
@@ -35,6 +42,9 @@ import { SubmittedOrderComponent } from './components/submitted-order/submitted-
 export class CartComponent implements OnInit {
   private readonly preOrdersService =
     inject(PreOrdersService);
+
+  private readonly reservationService =
+    inject(ReservationService);
 
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
@@ -109,7 +119,7 @@ export class CartComponent implements OnInit {
   cancelOrder(orderId: string): void {
     const order = this.findOrder(orderId);
 
-    if (!order) {
+    if (!order || !this.isReservationEditable(order)) {
       return;
     }
 
@@ -133,7 +143,7 @@ export class CartComponent implements OnInit {
   editOrder(orderId: string): void {
     const order = this.findOrder(orderId);
 
-    if (!order) {
+    if (!order || !this.isReservationEditable(order)) {
       return;
     }
 
@@ -156,7 +166,7 @@ export class CartComponent implements OnInit {
   submitOrder(orderId: string): void {
     const order = this.findOrder(orderId);
 
-    if (!order) {
+    if (!order || !this.isReservationEditable(order)) {
       return;
     }
 
@@ -178,8 +188,25 @@ export class CartComponent implements OnInit {
   }
 
   addDishToOrder(orderId: string): void {
-    console.log(`Adding a dish to order ${orderId}`);
-    void this.router.navigate(['/menu']);
+    const order = this.findOrder(orderId);
+
+    if (!order || !this.isReservationEditable(order)) {
+      return;
+    }
+
+    this.closeCart();
+    void this.router.navigate(['/menu'], {
+      queryParams: {
+        preOrder: 'true',
+        reservationId: order.reservationId,
+        reservationLabel: [
+          order.reservationAddress,
+          order.reservationTime,
+        ]
+          .filter(Boolean)
+          .join(', '),
+      },
+    });
   }
 
   updateDishQuantity(
@@ -193,7 +220,10 @@ export class CartComponent implements OnInit {
 
     const originalOrder = this.findOrder(orderId);
 
-    if (!originalOrder) {
+    if (
+      !originalOrder ||
+      !this.isReservationEditable(originalOrder)
+    ) {
       return;
     }
 
@@ -234,7 +264,10 @@ export class CartComponent implements OnInit {
   ): void {
     const originalOrder = this.findOrder(orderId);
 
-    if (!originalOrder) {
+    if (
+      !originalOrder ||
+      !this.isReservationEditable(originalOrder)
+    ) {
       return;
     }
 
@@ -276,13 +309,46 @@ export class CartComponent implements OnInit {
     return order;
   }
 
+  private isReservationEditable(order: Order): boolean {
+    if (order.reservationStatus === ReservationStatus.Reserved) {
+      return true;
+    }
+
+    console.warn(
+      `Pre-order for reservation ${order.reservationId} cannot be changed because the reservation is not Reserved.`,
+    );
+    return false;
+  }
+
   private loadOrders(): void {
-    this.preOrdersService
-      .getPreOrders()
+    forkJoin({
+      orders: this.preOrdersService.getPreOrders(),
+      reservations: this.reservationService
+        .getReservationsForUser$()
+        .pipe(
+          catchError((error: unknown) => {
+            console.error('Error loading reservation statuses:', error);
+            return of([]);
+          }),
+        ),
+    })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (orders) => {
-          this.orders.set(orders);
+        next: ({ orders, reservations }) => {
+          const reservationStatuses = new Map(
+            reservations.map((reservation) => [
+              reservation.id,
+              reservation.status,
+            ]),
+          );
+          this.orders.set(
+            orders.map((order) => ({
+              ...order,
+              reservationStatus: reservationStatuses.get(
+                order.reservationId,
+              ),
+            })),
+          );
         },
         error: (error) => {
           console.error('Error loading orders:', error);

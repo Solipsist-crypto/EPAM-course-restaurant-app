@@ -1,7 +1,7 @@
 export interface DishListResponse {
   id: string;
   name: string;
-  imageUrl: string;
+  imageUrl: string | null;
   price: number;
   state: string;
   weight: string;
@@ -12,5 +12,6 @@ export interface DishListResponse {
   carbohydrates: string;
   fats: string;
   vitamins: string;
+  dietaryTags?: string[];
   status?: 'Confirmed' | 'Rejected' | 'Pending';
 }

@@ -9,18 +9,25 @@
       <div class="order-item">
         @for (item of order().orderItems; track item.dish.id) {
         <div class="order-item-dish">
-          <img
-            class="dish-image"
-            [src]="item.dish.imageUrl"
-            [alt]="item.dish.name"
-            width="96"
-            height="96"
-          />
+          @if (item.dish.imageUrl && !failedImages.has(item.dish.id)) {
+            <img
+              class="dish-image"
+              [src]="item.dish.imageUrl"
+              [alt]="item.dish.name || 'Dish'"
+              width="96"
+              height="96"
+              (error)="onDishImageError(item.dish.id)"
+            />
+          } @else {
+            <span class="dish-image dish-image--fallback" aria-hidden="true">
+              {{ item.dish.name?.charAt(0) || '?' }}
+            </span>
+          }
 
           <div class="container">
             <div class="details">
               <div class="dish-name">
-                <span class="body-bold">{{ item.dish.name }}</span>
+                <span class="body-bold">{{ item.dish.name || 'Unknown dish' }}</span>
                   <span class="caption">Expected ready time – 10 minutes</span>
                 </div>
 
@@ -28,6 +35,7 @@
                   type="button"
                   class="icon-button icon-button--small"
                   [attr.aria-label]="'Remove ' + item.dish.name"
+                  [disabled]="!canModify()"
                   (click)="removeDishFromOrder(item.dish.id)"
                 >
                   <img
@@ -46,7 +54,7 @@
                     type="button"
                     class="icon-button icon-button--small"
                     aria-label="Decrease quantity"
-                    [disabled]="item.quantity <= 1"
+                    [disabled]="!canModify() || item.quantity <= 1"
                     (click)="decrementItemQuantity(item.dish.id)"
                   >
                     <img
@@ -64,6 +72,7 @@
                     type="button"
                     class="icon-button icon-button--small"
                     aria-label="Increase quantity"
+                    [disabled]="!canModify()"
                     (click)="incrementItemQuantity(item.dish.id)"
                   >
                     <img
@@ -87,6 +96,7 @@
         <button
           type="button"
           class="button button--tertiary button--large add-dish-btn"
+          [disabled]="!canModify()"
           (click)="addDishToOrder()"
         >
           <img
@@ -111,6 +121,7 @@
   <button
     type="button"
     class="button button--primary button--large submit-btn"
+    [disabled]="!canModify()"
     (click)="submit()"
   >
     Submit Pre-order
