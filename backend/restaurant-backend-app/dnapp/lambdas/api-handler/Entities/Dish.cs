@@ -1,6 +1,7 @@
 ﻿using Amazon.DynamoDBv2.DataModel;
 using APIHandler.Constants.Dishes;
 using APIHandler.Converters;
+using System.Collections.Generic;
 
 namespace APIHandler.Entities;
 
@@ -48,4 +49,7 @@ public class Dish
 
     [DynamoDBProperty("locationId")]
     public string LocationId { get; set; }
+
+    [DynamoDBProperty("allergens")]
+    public List<string> Allergens { get; set; } = [];
 }

@@ -4,6 +4,7 @@ using APIHandler.Constants.Dishes;
 using APIHandler.Constants.Orders;
 using APIHandler.Entities;
 using APIHandler.Exceptions;
+using APIHandler.Helpers;
 using APIHandler.Mappers;
 using APIHandler.Models.GuestSessions;
 using APIHandler.Models.Orders;
@@ -11,6 +12,7 @@ using APIHandler.Repositories.Auth;
 using APIHandler.Repositories.Dishes;
 using APIHandler.Repositories.GroupReservations;
 using APIHandler.Repositories.GuestSessions;
+using APIHandler.Repositories.Orders;
 using APIHandler.Repositories.Reservations;
 using APIHandler.Repositories.Tables;
 using System;
@@ -28,6 +30,7 @@ public class GuestSessionService(
     IGuestSessionRepository guestSessionRepository,
     IDishRepository dishRepository,
     IReservationRepository reservationRepository,
+    IOrderRepository orderRepository,
     IUserRepository userRepository,
     ITableRepository tableRepository) : IGuestSessionService
 {
@@ -57,8 +60,8 @@ public class GuestSessionService(
 
         int joinedGuestsCount = await countTask;
 
-        if (joinedGuestsCount + 1 >= reservation.GuestCount)
-            throw new GuestLimitExceededException($"Guest limit exceeded. Maximum capacity is {reservation.GuestCount}, but {joinedGuestsCount} guests have already joined.");
+        if (joinedGuestsCount >= reservation.GuestCount)
+            throw new GuestLimitExceededException($"Guest limit exceeded. Maximum number of guests is {reservation.GuestCount}, and {joinedGuestsCount} guests have already joined.");
 
         byte[] tokenBytes = RandomNumberGenerator.GetBytes(32);
 
@@ -69,6 +72,7 @@ public class GuestSessionService(
             GroupReservationId = group.GroupReservationId,
             SessionTokenHash = Convert.ToBase64String(SHA256.HashData(tokenBytes)),
             Dishes = [],
+            Allergies = AllergyHelper.Normalize(request.Allergies),
         };
 
         await guestSessionRepository.SaveAsync(session);
@@ -90,7 +94,7 @@ public class GuestSessionService(
             .GroupBy(d => d.DishType)
             .ToDictionary(k => k.Key, GuestMenuDishMapper.Map);
 
-        return new GuestMenuResponse(dishesMapped);
+        return new GuestMenuResponse(dishesMapped, session.Allergies);
     }
 
     public async Task AddDishAsync(string guestSessionId, string dishId, int quantity)
@@ -166,7 +170,7 @@ public class GuestSessionService(
         return new GroupReservationStatusResponse
         {
             CurrentParticipants = currentParticipants,
-            MaxCapacity = reservation.GuestCount,
+            MaxCapacity = reservation.GuestCount + 1,
             Status = group.Status
         };
     }
@@ -174,10 +178,24 @@ public class GuestSessionService(
     
     public async Task<GetAllSessionsResponse> GetGroupReservationSessionsAsync(string userId, string groupReservationId)
     {
-        await ValidateGroupReservationOwnerAsync(groupReservationId, userId);
+        GroupReservation group = await groupReservationRepository.GetGroupReservationByIdAsync(groupReservationId)
+            ?? throw new GroupReservationNotFoundException();
+
+        Reservation reservation = await reservationRepository.GetReservationByIdAsync(group.ReservationId)
+            ?? throw new ReservationNotFoundException("Associated reservation not found.");
+
+        if (!string.Equals(reservation.CustomerId, userId, StringComparison.Ordinal))
+            throw new ActionForbiddenException("Only the group reservation owner can perform this action.");
 
         var sessions = await guestSessionRepository.GetAllByGroupReservationIdAsync(groupReservationId);
-        return await MapSessionsResponseAsync(sessions);
+        if (!sessions.Any(session => session.IsOwnerSession && session.OwnerUserId == userId))
+        {
+            await CreateGroupOwnerSessionAsync(userId, groupReservationId);
+            sessions = await guestSessionRepository.GetAllByGroupReservationIdAsync(groupReservationId);
+        }
+
+        var ownerOrder = await orderRepository.GetOrderByReservationIdAsync(reservation.Id);
+        return await MapSessionsResponseAsync(sessions, ownerOrder);
     }
 
     public async Task<GetAllSessionsResponse> DeleteGuestSessionAsync(string userId, string groupReservationId, string guestSessionId)
@@ -203,10 +221,17 @@ public class GuestSessionService(
         return await MapSessionsResponseAsync(sessions);
     }
 
-    private async Task<GetAllSessionsResponse> MapSessionsResponseAsync(IEnumerable<GuestSession> sessions)
+    private async Task<GetAllSessionsResponse> MapSessionsResponseAsync(
+        IEnumerable<GuestSession> sessions,
+        Order? ownerOrder = null)
     {
+        var ownerOrderHasDishes = ownerOrder is { Dishes.Count: > 0 };
         var dishIds = sessions
-            .SelectMany(s => s.Dishes)
+            .SelectMany(session =>
+                session.IsOwnerSession && ownerOrderHasDishes
+                    ? ownerOrder!.Dishes
+                    : session.Dishes)
+            .Where(item => !string.IsNullOrWhiteSpace(item.DishId))
             .Select(s => s.DishId)
             .Distinct()
             .ToArray();
@@ -220,15 +245,40 @@ public class GuestSessionService(
 
         foreach (var guestSession in sessions)
         {
-            var items = guestSession.Dishes.Select(d => new OrderItemResponse
+            IEnumerable<string> participantAllergies = guestSession.Allergies ?? [];
+            if (guestSession.IsOwnerSession && !string.IsNullOrWhiteSpace(guestSession.OwnerUserId))
             {
-                Dish = DishMapper.ToDishResponse(dishesById[d.DishId]),
-                Quantity = d.Quantity
+                var user = await userRepository.GetUserByIdAsync(guestSession.OwnerUserId);
+                participantAllergies = AllergyHelper.Parse(
+                    user?.Attributes.FirstOrDefault(attribute => attribute.Name == "custom:allergies")?.Value);
+            }
+
+            var normalizedAllergies = AllergyHelper.Normalize(participantAllergies);
+            var sourceDishes = guestSession.IsOwnerSession && ownerOrderHasDishes
+                ? ownerOrder!.Dishes
+                : guestSession.Dishes;
+            var items = sourceDishes.Select(d => new OrderItemResponse
+            {
+                Dish = DishMapper.ToDishResponse(
+                    dishesById[d.DishId],
+                    AllergyHelper.HasConflict(normalizedAllergies, dishesById[d.DishId].Allergens)),
+                Quantity = d.Quantity,
+                State = d.State
             }).ToArray();
 
             decimal total = items.Sum(i => i.Quantity * i.Dish.Price);
             var participantType = guestSession.IsOwnerSession ? ParticipantType.Owner : ParticipantType.Guest;
-            var participant = new Participant(guestSession.Id, participantType, guestSession.GuestName, items, total, guestSession.IsSubmitted);
+            var isSubmitted = guestSession.IsOwnerSession && ownerOrderHasDishes
+                ? ownerOrder!.Status is OrderStatus.Submitted or OrderStatus.SubmittedByCustomer
+                : guestSession.IsSubmitted;
+            var participant = new Participant(
+                guestSession.Id,
+                participantType,
+                guestSession.GuestName,
+                items,
+                total,
+                isSubmitted,
+                normalizedAllergies);
             participants.Add(participant);
         }
 

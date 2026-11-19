@@ -1,4 +1,4 @@
-<div class="time-slot-container" [class.disabled]="disabled">
+<button type="button" class="time-slot-container" [class.disabled]="disabled" [disabled]="disabled">
   @if (showDate) {
     <div class="line">
       <img [src]="'/assets/svg/calendar-green.svg'" alt="calendar icon" class="icon" />
@@ -9,4 +9,4 @@
   <div class="line">
     <span class="body-bold">{{ label ?? formatTimeRange(timeRange.start) }}</span>
   </div>
-</div>
+</button>

@@ -26,6 +26,19 @@
         }
     </div>
 
+    <fieldset class="allergies-field">
+        <legend class="field-label">Allergies</legend>
+        <div class="allergy-options">
+            @for (allergy of allergyOptions; track allergy.value) {
+                <label class="allergy-option">
+                    <input type="checkbox" [checked]="allergies().includes(allergy.value)"
+                        (change)="toggleAllergy(allergy.value, $event)" />
+                    <span>{{ allergy.label }}</span>
+                </label>
+            }
+        </div>
+    </fieldset>
+
     <div modal-actions class="actions">
         <app-custom-button type="button" variant="primary" size="extra-large" fullWidth
             [disabled]="!valid() || !invite()" (click)="submit()">

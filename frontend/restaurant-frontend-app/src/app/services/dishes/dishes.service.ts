@@ -30,4 +30,10 @@ export class DishesService {
 
     return this.http.get<DishListResponse[]>(`${this.baseUrl}/dishes`, { params });
   }
+
+  getDishesByLocationId(locationId: string): Observable<DishListResponse[]> {
+    return this.http.get<DishListResponse[]>(
+      `${this.baseUrl}/locations/${encodeURIComponent(locationId)}/dishes`,
+    );
+  }
 }

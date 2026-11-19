@@ -51,6 +51,10 @@ public class RegistrationHandler : IApiRequestHandler
             PersonalDataValidator.ValidateName(registrationRequest.LastName, "Last name");
             PersonalDataValidator.ValidateEmail(registrationRequest.Email);
             PersonalDataValidator.ValidatePasswords(registrationRequest.Password, registrationRequest.ConfirmPassword);
+            if (registrationRequest.Allergies is not null)
+            {
+                registrationRequest.Allergies = AllergyHelper.Normalize(registrationRequest.Allergies);
+            }
         }
         catch (ValidationException ex)
         {
@@ -106,6 +110,15 @@ public class RegistrationHandler : IApiRequestHandler
                 new AttributeType { Name = "family_name", Value = registrationRequest.LastName }
             ]
         };
+        if (registrationRequest.Allergies is not null)
+        {
+            signUpRequest.UserAttributes.Add(new AttributeType
+            {
+                Name = "custom:allergies",
+                Value = JsonSerializer.Serialize(registrationRequest.Allergies)
+            });
+        }
+
         try
         {
             var result = await _cognitoClient.SignUpAsync(signUpRequest);

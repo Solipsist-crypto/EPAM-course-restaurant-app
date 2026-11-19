@@ -48,6 +48,7 @@
           ) {
           <app-not-submitted-order
             [order]="item"
+            [allergies]="currentUser()?.allergies ?? []"
             (submitted)="submitOrder($event)"
             (removeDish)="
               removeDishFromOrder(item.orderId, $event)
@@ -83,6 +84,7 @@
             ) {
             <app-submitted-order
               [order]="item"
+              [allergies]="currentUser()?.allergies ?? []"
               (canceled)="openCancelModal(item.orderId)"
               (edited)="editOrder(item.orderId)"
             />

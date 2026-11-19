@@ -101,6 +101,21 @@
       </div>
     </label>
 
+    <fieldset class="allergies">
+      <legend>Allergies</legend>
+      <div class="allergy-options" formArrayName="allergies">
+        @for (allergy of allergyOptions; track allergy.value; let i = $index) {
+          <label class="allergy-option">
+            <input
+              type="checkbox"
+              [formControlName]="i"
+            />
+            {{ allergy.label }}
+          </label>
+        }
+      </div>
+    </fieldset>
+
     <app-password-with-rules
       class="password"
       [control]="password"

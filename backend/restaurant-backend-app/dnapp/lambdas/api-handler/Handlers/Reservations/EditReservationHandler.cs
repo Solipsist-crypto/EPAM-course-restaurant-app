@@ -104,7 +104,7 @@ public class EditReservationHandler : IApiRequestHandler
             return ResponseBuilder.CreateErrorResponse(404, "Location not foun.d", context.Logger);
         }
 
-        var response = ReservationMapper.ToReservationResponse(reservation, location.Address);
+        var response = ReservationMapper.ToReservationResponse(reservation, location.Address, locationId: location.Id);
         return ResponseBuilder.CreateSuccessResponse(response);
     }
 

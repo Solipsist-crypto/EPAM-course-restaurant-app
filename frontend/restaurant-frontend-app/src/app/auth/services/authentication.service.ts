@@ -49,7 +49,8 @@ export class AuthenticationService {
     lastName: string,
     email: string,
     password: string,
-    confirmPassword: string
+    confirmPassword: string,
+    allergies?: string[]
   ) {
     const body = {
       firstName: firstName,
@@ -57,6 +58,7 @@ export class AuthenticationService {
       email: email,
       password: password,
       confirmPassword: confirmPassword,
+      ...(allergies !== undefined ? { allergies } : {}),
     };
     const url = this.baseUrl + '/register';
 
@@ -150,9 +152,15 @@ export class AuthenticationService {
     const user = localStorage.getItem('user');
     return user ? JSON.parse(user) : null;
   }
-  editProfile(firstName: string, lastName: string): Observable<string> {
+  editProfile(firstName: string, lastName: string, allergies?: string[]): Observable<string> {
     const url = this.baseUrl + '/me';
-    const body = { firstName, lastName };
+    const body: { firstName: string; lastName: string; allergies?: string[] } = {
+      firstName,
+      lastName,
+    };
+    if (allergies !== undefined) {
+      body.allergies = allergies;
+    }
     return new Observable((observer) => {
       this.http.put(url, body).subscribe({
         next: () => {

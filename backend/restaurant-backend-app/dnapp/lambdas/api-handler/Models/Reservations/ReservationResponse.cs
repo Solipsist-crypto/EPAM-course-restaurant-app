@@ -33,6 +33,9 @@ public class ReservationResponse
     [JsonPropertyName("locationAddress")]
     public required string Address { get; set; }
 
+    [JsonPropertyName("locationId")]
+    public string? LocationId { get; set; }
+
     [JsonPropertyName("restaurantName")]
     public required string RestaurantName { get; set; } = "Green & Tasty";
     

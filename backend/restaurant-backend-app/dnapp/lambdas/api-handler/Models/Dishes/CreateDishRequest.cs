@@ -46,4 +46,7 @@ public class CreateDishRequest
         
     [JsonPropertyName("locationIds")]
     public required List<string> LocationIds { get; set; }
+
+    [JsonPropertyName("allergens")]
+    public List<string>? Allergens { get; set; }
 }

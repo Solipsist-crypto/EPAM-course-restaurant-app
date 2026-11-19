@@ -1,5 +1,5 @@
 @if (store.status() === 'submitted') {
-<app-guest-preorder-submitted [items]="store.cartItems()" [total]="store.total()" [guestName]="store.guestName()"
+<app-guest-preorder-submitted [items]="store.cartItems()" [allergies]="store.guestAllergies()" [total]="store.total()" [guestName]="store.guestName()"
     [invite]="store.invite()" (createNew)="store.createNewPreorder()" />
 } @else {
 @if (store.inviteError() === 'retryable') {
@@ -81,7 +81,13 @@
                             [dish]="dish"
                             [preOrderEnabled]="true"
                             (preOrderClicked)="addDishToCart(dish)"
-                        />
+                        >
+                            @if (conflictingAllergens(dish).length) {
+                                <p dish-footer class="allergen-warning" role="alert">
+                                    ⚠️ Contains {{ conflictingAllergens(dish).map(formatAllergen).join(', ') }}
+                                </p>
+                            }
+                        </app-dish-card>
                     }
                 </div>
             </section>
@@ -91,11 +97,12 @@
 
 <!-- mandatory modal: show until name is set -->
 @if (!store.guestName()) {
-<app-guest-name-modal [invite]="store.inviteVm()" (confirmed)="store.join($event)" (closed)="noop()" />
+<app-guest-name-modal [invite]="store.inviteVm()"
+    (confirmed)="store.join($event.name, $event.allergies)" (closed)="noop()" />
 }
 
 <!-- cart drawer -->
-<app-guest-cart-drawer [open]="isCartOpen()" [items]="store.cartItems()" [total]="store.total()"
+<app-guest-cart-drawer [open]="isCartOpen()" [items]="store.cartItems()" [allergies]="store.guestAllergies()" [total]="store.total()"
     [busy]="store.cartBusy()" [error]="store.cartError()" (closed)="closeCart()"
     (goToMenu)="closeCart()" (inc)="store.inc($event)" (dec)="store.dec($event)" (remove)="store.remove($event)"
     (submitted)="store.submitPreorder()" />

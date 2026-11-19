@@ -1,12 +1,13 @@
-﻿using Amazon.DynamoDBv2.DataModel;
+using Amazon.DynamoDBv2.DataModel;
 using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.Core;
 using APIHandler.Constants;
 using APIHandler.Entities;
 using APIHandler.Helpers;
 using APIHandler.Mappers;
+using APIHandler.Repositories.Dishes;
 using System;
-using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 
@@ -15,17 +16,14 @@ namespace APIHandler.Handlers.Dishes;
 public class GetDishesByLocationIdHandler : IApiRequestHandler
 {
     private static readonly string LocationsTableName = ResourceNames.LocationsTableName;
-    private static readonly string DishesTableName = ResourceNames.DishesTableName;
-
     private readonly IDynamoDBContext _dbContext;
+    private readonly IDishRepository _dishRepository;
 
-    public GetDishesByLocationIdHandler(IDynamoDBContext dbContext)
+    public GetDishesByLocationIdHandler(IDynamoDBContext dbContext, IDishRepository dishRepository)
     {
         _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
+        _dishRepository = dishRepository ?? throw new ArgumentNullException(nameof(dishRepository));
     }
-
-    private static readonly DynamoDBOperationConfig dishesConfig = new()
-    { OverrideTableName = DishesTableName };
 
     public async Task<APIGatewayProxyResponse> HandleRequest(APIGatewayProxyRequest request, ILambdaContext context)
     {
@@ -49,24 +47,8 @@ public class GetDishesByLocationIdHandler : IApiRequestHandler
                 context.Logger);
         }
 
-        if (location == null || location.SpecialtyDishIds == null || location.SpecialtyDishIds.Count == 0)
-        {
-            var emptyDishesList = new List<Dish>();
-            return ResponseBuilder.CreateSuccessResponse(emptyDishesList);
-        }
-
-        // getting dishes
-        var batchGet = _dbContext.CreateBatchGet<Dish>(dishesConfig);
-
-        foreach (var dishId in location.SpecialtyDishIds)
-        {
-            batchGet.AddKey(dishId);
-        }
-
-        await batchGet.ExecuteAsync();
-        var results = batchGet.Results;
-
-        var dishesListResponse = results.ConvertAll(DishMapper.ToDishListResponse);
+        var dishes = await _dishRepository.GetDishesByLocationIdAsync(locationId);
+        var dishesListResponse = dishes.Select(DishMapper.ToDishListResponse).ToList();
 
         return ResponseBuilder.CreateSuccessResponse(dishesListResponse);
     }

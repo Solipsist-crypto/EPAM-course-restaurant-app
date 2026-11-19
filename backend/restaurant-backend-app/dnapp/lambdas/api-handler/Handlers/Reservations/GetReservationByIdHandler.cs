@@ -54,7 +54,7 @@ public class GetReservationByIdHandler : IApiRequestHandler
 
         var order = await _orderService.GetOrderByReservationIdAsync(reservation.Id);
 
-        var reservationResponse = ReservationMapper.ToReservationResponse(reservation, location.Address, order);
+        var reservationResponse = ReservationMapper.ToReservationResponse(reservation, location.Address, order, locationId: location.Id);
         return ResponseBuilder.CreateSuccessResponse(reservationResponse);
     }
 }

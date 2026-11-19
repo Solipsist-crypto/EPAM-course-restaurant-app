@@ -22,6 +22,7 @@
         (editReservation)="openEditModal($event)"
         (leaveFeedbackReservation)="openFeedback($event)"
         (updateFeedbackReservation)="openFeedback($event)"
+        (inviteGuests)="openInviteGuests($event)"
       />
     }
   </ul>
@@ -42,6 +43,13 @@
       Book a table
     </a>
   </div>
+}
+
+@if (showInviteGuestsModal() && selectedReservationAsReservation()) {
+  <app-reservation-invite-modal
+    [reservation]="selectedReservationAsReservation()!"
+    (closed)="closeInviteGuests()"
+  />
 }
 
 @if (

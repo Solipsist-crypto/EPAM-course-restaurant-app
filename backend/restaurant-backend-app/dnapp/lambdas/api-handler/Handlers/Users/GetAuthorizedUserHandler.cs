@@ -51,7 +51,8 @@ public class GetAuthorizedUserHandler : IApiRequestHandler
             FirstName = attributes.GetValueOrDefault("given_name", "Unknown"),
             LastName = attributes.GetValueOrDefault("family_name", "User"),
             Email = attributes.GetValueOrDefault("email", "no_email"),
-            Role = await GetUserRoleAsync(username)
+            Role = await GetUserRoleAsync(username),
+            Allergies = AllergyHelper.Parse(attributes.GetValueOrDefault("custom:allergies"))
         };
 
         return ResponseBuilder.CreateSuccessResponse(userDto);

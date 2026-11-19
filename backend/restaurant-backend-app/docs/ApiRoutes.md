@@ -173,7 +173,8 @@ Response: `200 OK`
     "proteins": "string",
     "fats": "string",
     "carbohydrates": "string",
-    "vitamins": "string"
+    "vitamins": "string",
+    "allergens": ["dairy", "gluten"]
   }
 ]
 ```
@@ -294,7 +295,8 @@ Request body:
   "vitamins": "string",
   "imageBase64": "string|null",
   "state": "string",
-  "locationIds": ["string"]
+  "locationIds": ["string"],
+  "allergens": ["dairy", "gluten"]
 }
 ```
 
@@ -313,7 +315,9 @@ Response: `201 Created`
   "carbohydrates": "string",
   "vitamins": "string",
   "imageUrl": "string",
-  "state": "string"
+  "state": "string",
+  "allergens": ["dairy", "gluten"],
+  "hasConflict": false
 }
 ```
 
@@ -339,7 +343,8 @@ Response: `200 OK`
     "proteins": "string",
     "fats": "string",
     "carbohydrates": "string",
-    "vitamins": "string"
+    "vitamins": "string",
+    "allergens": ["dairy", "gluten"]
   }
 ]
 ```
@@ -359,7 +364,8 @@ Request body:
   "carbohydrates": "string",
   "vitamins": "string",
   "imageBase64": "string|null",
-  "state": "string"
+  "state": "string",
+  "allergens": ["dairy", "gluten"]
 }
 ```
 Response: 200 OK
@@ -377,7 +383,9 @@ Response: 200 OK
   "carbohydrates": "string",
   "vitamins": "string",
   "imageUrl": "string",
-  "state": "string"
+  "state": "string",
+  "allergens": ["dairy", "gluten"],
+  "hasConflict": false
 }
 ```
 
@@ -409,7 +417,8 @@ Response: `200 OK`
     "proteins": "string",
     "fats": "string",
     "carbohydrates": "string",
-    "vitamins": "string"
+    "vitamins": "string",
+    "allergens": ["dairy", "gluten"]
   }
 ]
 ```
@@ -430,7 +439,9 @@ Response: `200 OK`
   "carbohydrates": "string",
   "vitamins": "string",
   "imageUrl": "string",
-  "state": "string"
+  "state": "string",
+  "allergens": ["dairy", "gluten"],
+  "hasConflict": false
 }
 ```
 
@@ -739,7 +750,8 @@ Response: `200 OK`
   "firstName": "string",
   "lastName": "string",
   "email": "string",
-  "role": "string"
+  "role": "string",
+  "allergies": ["peanuts", "dairy"]
 }
 ```
 
@@ -748,7 +760,8 @@ Request body:
 ```json
 {
   "firstName": "string",
-  "lastName": "string"
+  "lastName": "string",
+  "allergies": ["peanuts", "dairy"]
 }
 ```
 
@@ -852,7 +865,9 @@ Response: `200 OK`
           "carbohydrates": "string",
           "vitamins": "string",
           "imageUrl": "string",
-          "state": "string"
+          "state": "string",
+          "allergens": ["dairy", "gluten"],
+          "hasConflict": false
         },
         "quantity": 2
       }
@@ -885,7 +900,9 @@ Response: `200 OK`
         "carbohydrates": "string",
         "vitamins": "string",
         "imageUrl": "string",
-        "state": "string"
+        "state": "string",
+        "allergens": ["dairy", "gluten"],
+        "hasConflict": false
       },
       "quantity": 2
     }
@@ -930,7 +947,9 @@ Response: `201 Created`
         "carbohydrates": "string",
         "vitamins": "string",
         "imageUrl": "string",
-        "state": "string"
+        "state": "string",
+        "allergens": ["dairy", "gluten"],
+        "hasConflict": false
       },
       "quantity": 2
     }
@@ -1093,7 +1112,8 @@ Request body:
 ```json
 {
   "groupReservationId": "string",
-  "guestName": "string"
+  "guestName": "string",
+  "allergies": ["peanuts", "dairy"]
 }
 ```
 Response: 201 Created
@@ -1145,23 +1165,28 @@ Response: 200 OK
 ### `GET` /guest/sessions/{guestSessionId}/menu
 Response: 200 OK
 ```json
-[
-  {
-    "id": "string",
-    "name": "string",
-    "imageUrl": "string",
-    "price": 12.34,
-    "state": "Available",
-    "weight": "string",
-    "dishType": "string",
-    "description": "string",
-    "calories": "string",
-    "proteins": "string",
-    "fats": "string",
-    "carbohydrates": "string",
-    "vitamins": "string"
-  }
-]
+{
+  "Dishes": {
+    "0": [
+      {
+        "Id": "string",
+        "Name": "string",
+        "ImageUrl": "string",
+        "Price": 12.34,
+        "State": "Available",
+        "Weight": "string",
+        "Description": "string",
+        "Calories": "string",
+        "Proteins": "string",
+        "Fats": "string",
+        "Carbohydrates": "string",
+        "Vitamins": "string",
+        "allergens": ["dairy", "gluten"]
+      }
+    ]
+  },
+  "allergies": ["peanuts", "dairy"]
+}
 ```
 
 ### `POST` /guest/sessions/{guestSessionId}/submit
@@ -1221,12 +1246,15 @@ Response: `200 OK`
       "id": "session1",
       "type": "Guest",
       "name": "Andrii",
+      "allergies": ["dairy"],
       "items": [
         {
           "dish": {
             "id": "dish1",
             "name": "Caesar Salad",
-            "price": 180
+            "price": 180,
+            "allergens": ["dairy", "gluten"],
+            "hasConflict": true
           },
           "quantity": 2
         }

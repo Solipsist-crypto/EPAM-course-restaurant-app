@@ -1,4 +1,4 @@
-import {Component, ChangeDetectionStrategy, input, output, computed} from '@angular/core';
+import {Component, ChangeDetectionStrategy, input, output, computed, signal} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DishListResponse } from '@app/models/dishes/dish-list-response.model';
 import { DishState } from '@app/models/enums/dish-state.model';
@@ -20,9 +20,17 @@ export class DishCardComponent {
 
   readonly dishClicked = output<void>();
   readonly preOrderClicked = output<void>();
+  readonly failedImageUrl = signal<string | null>(null);
 
   readonly dishStateLabel = computed(() => {
     const state = this.dish().state;
+
+    if (
+      state.toLowerCase() === DishState.OnStop.toLowerCase() ||
+      state.toLowerCase() === DishState.OutOfStock.toLowerCase()
+    ) {
+      return 'Sold Out';
+    }
 
     return DishStateLabels[state as DishState] ?? state;
   });
@@ -40,5 +48,9 @@ export class DishCardComponent {
     if (!this.isUnavailable() && !this.preOrderEnabled()) {
       this.dishClicked.emit();
     }
+  }
+
+  onImageError(): void {
+    this.failedImageUrl.set(this.dish().imageUrl || '');
   }
 }

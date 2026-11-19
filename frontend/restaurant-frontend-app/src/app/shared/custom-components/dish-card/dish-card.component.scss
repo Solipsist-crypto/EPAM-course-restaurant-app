@@ -26,6 +26,15 @@
     max-height: 12.25rem;
   }
 
+  .dish-image-fallback {
+    display: grid;
+    place-items: center;
+    background: color.$green-100;
+    color: color.$green-800;
+    font-size: 2rem;
+    font-weight: 500;
+  }
+
   .dish-info {
     width: 100%;
     display: flex;
@@ -37,6 +46,22 @@
       justify-content: space-between;
       align-items: flex-start;
       gap: 0.75rem;
+    }
+
+    .dietary-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.375rem;
+    }
+
+    .dietary-badge {
+      padding: 0.125rem 0.5rem;
+      border-radius: 999px;
+      background: color.$new-blue-100;
+      color: color.$new-blue-300;
+      font-size: 0.6875rem;
+      line-height: 1.25rem;
+      font-weight: 500;
     }
 
     .dish-name {
